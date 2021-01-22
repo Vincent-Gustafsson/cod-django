@@ -40,7 +40,16 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'dj_rest_auth.registration',
+
+    'users',
 ]
+
+
+AUTH_USER_MODEL = 'users.User'
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'users.serializers.UserRegistrationSerializer'
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -126,3 +135,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+SITE_ID = 1
+
+# Using this Email backend right now because I don't care about the email verification right now.
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+
+# Switch to Console backend if you want to see the emails in the console
+# Switch to a real Email backend if it's needed.
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
