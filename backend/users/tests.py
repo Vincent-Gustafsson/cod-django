@@ -1,8 +1,11 @@
+from django.http import request
 from django.test import TestCase
 from django.urls import reverse
 
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, force_authenticate
+from rest_framework.authtoken.models import Token
+
 from .models import User
 
 
@@ -33,16 +36,49 @@ class UserModelTest(TestCase):
         self.user.save()
 
 
-
-"""
-class AccountTests(APITestCase):
-
-
-    def test_create_account(self):
-        url = reverse('account-list')
-        data = {'name': 'DabApps'}
+class UserTest(APITestCase):
+    def test_create_user(self):
+        # TODO This really shouldn't be hard-coded
+        url = '/auth/register/'
+        data = {
+            'username': 'TestCreateUser',
+            'email':'TestCreateUser@gmail.com',
+            'password': '1234',
+            'password2': '1234'
+        }
         response = self.client.post(url, data, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Account.objects.count(), 1)
-        self.assertEqual(Account.objects.get().name, 'DabApps')
-"""
+        self.assertEqual(User.objects.get(username=data['username']).username, data['username'])
+    
+    def test_login_user(self):
+        url = '/auth/login/'
+
+        user = User.objects.create_user(username='testLogin', email='testLogin@test.com', password='12345')
+
+        response = self.client.post(url, {'username':'testLogin','password':'12345'}, format='json')
+
+        token = Token.objects.get(user=user)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['key'], token.key)
+
+    def test_logout_user(self):
+        user = User.objects.create_user(username='testUserLogout', email='testUserLogout@test.com', password='12345')
+        token = Token.objects.create(user=user)
+
+        response = self.client.post('/auth/logout/')
+        force_authenticate(response, user=user, token=token)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_details(self):
+        user = User.objects.create_user(username='testUserDetails', email='testUserDetails@test.com', password='12345')
+        
+        self.client.force_authenticate(user)
+        response = self.client.get('/auth/user/')
+        
+        print(response.json())
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['id'], user.id)

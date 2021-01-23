@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'users',
 ]
 
-
 AUTH_USER_MODEL = 'users.User'
 
 REST_AUTH_REGISTER_SERIALIZERS = {
@@ -150,3 +149,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 # Switch to a real Email backend if it's needed.
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
