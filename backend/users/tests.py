@@ -36,7 +36,7 @@ class UserModelTest(TestCase):
         self.user.save()
 
 
-class UserTest(APITestCase):
+class AuthViewsTest(APITestCase):
     def test_create_user(self):
         # TODO This really shouldn't be hard-coded
         url = '/auth/register/'
@@ -77,8 +77,6 @@ class UserTest(APITestCase):
         
         self.client.force_authenticate(user)
         response = self.client.get('/auth/user/')
-        
-        print(response.json())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['id'], user.id)
