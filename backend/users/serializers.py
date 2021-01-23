@@ -16,6 +16,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             }
         }
 
+    def validate_password(self, data):
+        min_password_length = 6
+        if len(data) < min_password_length:
+            raise serializers.ValidationError({'password':'The password must be at least 6 characters long.'})
+
+        else:
+            return data
+
     def save(self, request):
         user = User(
             email=self.validated_data['email'],
