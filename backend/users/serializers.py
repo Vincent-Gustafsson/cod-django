@@ -32,6 +32,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+"""
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('display_name', 'description', 'avatar',)
+"""
 
-#class UserProfileSerializer(serializers.ModelSerializer):
-#    pass
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'display_name', 'description', 'avatar', 'date_joined')

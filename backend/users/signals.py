@@ -11,3 +11,15 @@ def set_display_name(sender, instance, **kwargs):
     if instance.display_name == None:
         instance.display_name = instance.username
         instance.save()
+    
+    if instance.avatar == None:
+        # Gets the default value of the avatar ImageField.
+        # In this case:
+        #   ImageField(upload_to='uploads/avatars', default='uploads/avatars/default_avatar.png')
+        #
+        # default_avatar_path will be equal to 'uploads/avatars/default_avatar.png'
+
+        default_avatar_path = User._meta.get_field('avatar').get_default()
+        instance.avatar = default_avatar_path
+        instance.save()
+    

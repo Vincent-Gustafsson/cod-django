@@ -46,8 +46,13 @@ INSTALLED_APPS = [
 
 
 AUTH_USER_MODEL = 'users.User'
+
 REST_AUTH_REGISTER_SERIALIZERS = {
-    'REGISTER_SERIALIZER': 'users.serializers.UserRegistrationSerializer'
+    'REGISTER_SERIALIZER': 'users.serializers.UserRegistrationSerializer',
+    
+}
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailSerializer',
 }
 
 
