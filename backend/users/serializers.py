@@ -47,7 +47,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'display_name', 'description', 'avatar', 'date_joined')
 
 
+# Kind of like USerSettings. THinking about changin the name.
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'display_name', 'description', 'avatar', 'date_joined')
+        fields = ('id', 'username')

@@ -129,6 +129,19 @@ class UserRegistrationViewTest(APITestCase):
 
 
 class AuthViewsTest(APITestCase):
+    def setUp(self):
+        self.details_user = User.objects.create_user(
+            username='testUserDetails',
+            email='testUserDetails@test.com',
+            password='12345'
+        )
+
+        self.change_password_user = User.objects.create_user(
+            username='testUserPassword',
+            email='testUserPassword@test.com',
+            password='12345'
+        )
+
     def test_login_user(self):
         url = reverse('rest_login')
 
@@ -152,21 +165,48 @@ class AuthViewsTest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_user_details(self):
+    def test_get_user_details(self):
         url = reverse('rest_user_details')
 
-        user = User.objects.create_user(username='testUserDetails', email='testUserDetails@test.com', password='12345')
-        
-        self.client.force_authenticate(user)
-        response = self.client.get('/auth/user/')
+        self.client.force_authenticate(self.details_user)
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['id'], user.id)
+        self.assertEqual(response.json()['id'], self.details_user.id)
+
+    def test_update_user_details(self):
+        url = reverse('rest_user_details')
+        
+        updated_username = fake.first_name()
+
+        data = {'username': updated_username}
+
+        self.client.force_authenticate(self.details_user)
+        response = self.client.patch(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(User.objects.get(pk=self.details_user.id).username, updated_username)
+
+    def test_change_password(self):
+        url = reverse('rest_password_change')
+        
+        new_password = fake.password()
+        data = {'new_password1': new_password, 'new_password2': new_password}
+
+        old_password_hash = self.change_password_user.password
+
+        self.client.force_authenticate(self.change_password_user)
+        response = self.client.post(url, data)
+
+        new_password_hash = self.change_password_user.password
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_password_hash, new_password_hash)
 
 
-class UserViewSetTest(APITestCase):
+class UserViewsTest(APITestCase):
     def setUp(self):
-        for i in range(10):
+        for i in range(3):
             User.objects.create_user(
                 username= f'{i}{fake.first_name()}',
                 email=f'{i}{fake.email()}',
@@ -195,3 +235,16 @@ class UserViewSetTest(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()['username'], self.users[0].username)
+
+    def test_delete_user(self):
+        """ Tests if the user detail endpoint returns the right user """
+        url = reverse('user-delete')
+
+        user = self.users[0]
+
+        self.client.force_authenticate(user)
+
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(User.objects.filter(pk=user.id).exists())
