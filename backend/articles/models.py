@@ -3,23 +3,49 @@ from django.contrib.auth import get_user_model
 
 
 class Article(models.Model):
-    title = models.CharField(50)
+    title = models.CharField(max_length=50)
     content = models.TextField()
     
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')
-
-    # likes
-    # special_likes
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.title[:10]}...'
+        return f'{self.title[:20]}...'
+    
+    @property
+    def likes_amount(self):
+        likes = self.likes.all()
+        if likes:
+            return likes.filter(special_like=False).count()
+
+        return 0
+    
+    @property
+    def special_likes_amount(self):
+        likes = self.likes.all()
+        if likes:
+            return likes.filter(special_like=True).count()
+
+        return 0
+
+
+class ArticleLike(models.Model):
+    special_like = models.BooleanField(default=False)
+    
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='article_likes')
+    article = models.ForeignKey('Article', on_delete=models.CASCADE, related_name='likes')
+
+    def __str__(self):
+        if not self.special_like:
+            return f'{self.user.username} liked {self.article.title[:20]}...'
+        else:
+            return f'{self.user.username} special-liked {self.article.title[:20]}...'
 
 
 class Comment(models.Model):
-    body = models.CharField(300)
+    body = models.CharField(max_length=300)
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comments')
     article = models.ForeignKey('Article', on_delete=models.CASCADE, related_name='comments')
@@ -28,13 +54,13 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.body[10]}...'
+        return f'{self.body[:20]}...'
 
     @property
-    def get_score(self):
+    def score(self):
         votes = self.comment_votes.all()
-        if votes[0]:
-            return votes.filter(downvote=False) - votes.filter(downvote=True)
+        if votes:
+            return votes.filter(downvote=False).count() - votes.filter(downvote=True).count()
 
         return 0
 
@@ -47,6 +73,6 @@ class CommentVote(models.Model):
 
     def __str__(self):
         if not self.downvote:
-            return f'{self.user.username} upvoted {self.comment.body[:10]}...'
+            return f'{self.user.username} upvoted {self.comment.body[:20]}...'
         else:
-            return f'{self.user.username} downvoted {self.comment.body[:10]}...'
+            return f'{self.user.username} downvoted {self.comment.body[:20]}...'
