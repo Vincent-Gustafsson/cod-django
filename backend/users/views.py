@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins, generics, exceptions
 
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserProfileSerializer
 
 
 # User list, retrieve
@@ -25,3 +25,13 @@ class UserDestroyView(generics.DestroyAPIView):
 
 
 # TODO UPDATE PROFILE VIEW
+class UserProfileUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        try:
+            instance = self.queryset.get(pk=self.request.user.id)
+            return instance
+        except User.DoesNotExist:
+            raise exceptions.NotFound()

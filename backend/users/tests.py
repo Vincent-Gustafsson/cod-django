@@ -237,14 +237,41 @@ class UserViewsTest(APITestCase):
         self.assertEqual(response.json()['username'], self.users[0].username)
 
     def test_delete_user(self):
-        """ Tests if the user detail endpoint returns the right user """
+        """ Tests if the user delete endpoint works """
         url = reverse('user-delete')
 
         user = self.users[0]
 
         self.client.force_authenticate(user)
-
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(User.objects.filter(pk=user.id).exists())
+
+    def test_update_user_profile(self):
+        """ Tests if the user update profile endpoint works """
+        
+        url = reverse('user-profile-update')
+
+        user = self.users[0]
+        original_avatar = self.users[0].avatar
+
+        new_display_name = fake.first_name()
+        avatar_fp = r'C:\dev\cod\backend\media\uploads\avatars\r6.jpg'
+
+        with open(avatar_fp, 'rb') as avatar:
+            data = {
+                'display_name': new_display_name,
+                'description': 'This is a test description.',
+                'avatar': avatar
+            }
+            
+            self.client.force_authenticate(user)
+            response = self.client.patch(url, data, format='multipart')
+
+        new_avatar = self.users[0].avatar
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.users[0].display_name, new_display_name)
+        self.assertEqual(self.users[0].description, 'This is a test description.')
+        self.assertNotEqual(original_avatar, new_avatar)

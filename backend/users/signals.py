@@ -3,6 +3,8 @@ from django.dispatch import receiver
 
 from .models import User
 
+
+# TODO Should all of this actually just be in the create method?
 @receiver(pre_save, sender=User)
 def set_display_name(sender, instance, **kwargs):
     # If display_name is None set display_name to the username
