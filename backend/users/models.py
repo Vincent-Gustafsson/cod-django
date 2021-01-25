@@ -35,6 +35,8 @@ class User(AbstractBaseUser):
     description = models.CharField(max_length=150)
     avatar = models.ImageField(upload_to='uploads/avatars', default='uploads/avatars/default_avatar.png')
 
+    saved_articles = models.ManyToManyField('articles.Article', related_name='saved_by')
+
     date_joined = models.DateField(verbose_name='date joined', auto_now_add=True)
     
     is_active = models.BooleanField(default=True)
