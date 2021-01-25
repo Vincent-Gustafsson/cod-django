@@ -1,3 +1,5 @@
+import os, shutil
+
 from django.http import request
 from django.test import TestCase
 from django.urls import reverse
@@ -19,7 +21,6 @@ fake = faker.Faker()
 class UserModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', email="test@gmail.com", password='12345')
-        self.user.save()
 
     def test_create_user(self):
         self.assertTrue(isinstance(self.user, User))
@@ -275,3 +276,18 @@ class UserViewsTest(APITestCase):
         self.assertEqual(self.users[0].display_name, new_display_name)
         self.assertEqual(self.users[0].description, 'This is a test description.')
         self.assertNotEqual(original_avatar, new_avatar)
+
+    def tearDown(self):
+        # All of this code may be unecessary, but it works.
+        
+        directory = 'C:/dev/cod/backend/media/uploads/avatars'
+        preserved_files = ('r6.jpg', 'default_avatar.png',)
+
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            try:
+                if (os.path.isfile(file_path) or os.path.islink(file_path)) and filename not in preserved_files:
+                    os.unlink(file_path)
+
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))

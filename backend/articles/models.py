@@ -17,18 +17,16 @@ class Article(models.Model):
     @property
     def likes_amount(self):
         likes = self.likes.all()
-        if likes:
-            return likes.filter(special_like=False).count()
-
-        return 0
+        return likes.filter(special_like=False).count()
     
     @property
     def special_likes_amount(self):
         likes = self.likes.all()
-        if likes:
-            return likes.filter(special_like=True).count()
+        return likes.filter(special_like=True).count()
 
-        return 0
+    @property
+    def comments_amount(self):
+        return Comment.objects.all().count()
 
 
 class ArticleLike(models.Model):
