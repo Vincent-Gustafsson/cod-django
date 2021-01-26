@@ -8,5 +8,6 @@ urlpatterns = [
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/register/', include('dj_rest_auth.registration.urls')),
 
-    path('api/', include('users.urls'))
+    path('api/', include('users.urls')),
+    path('api/', include('articles.urls')),
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
