@@ -33,26 +33,25 @@ class User(AbstractBaseUser):
     username = models.CharField(max_length=30, unique=True)
     display_name = models.CharField(max_length=30, blank=True, null=True)
     description = models.CharField(max_length=150)
-    avatar = models.ImageField(upload_to='uploads/avatars', default='uploads/avatars/default_avatar.png')
+
+    avatar = models.ImageField(upload_to='uploads/avatars',
+                               default='uploads/avatars/default_avatar.png')
 
     saved_articles = models.ManyToManyField('articles.Article', related_name='saved_by')
 
     date_joined = models.DateField(verbose_name='date joined', auto_now_add=True)
-    
+
     is_active = models.BooleanField(default=True)
-    
+
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
-
-    USERNAME_FIELD = 'username' 
+    USERNAME_FIELD = 'username'
 
     REQUIRED_FIELDS = ['email']
 
-
     objects = MyUserManager()
-
 
     def __str__(self):
         return self.username

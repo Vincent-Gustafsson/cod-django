@@ -1,4 +1,7 @@
 from rest_framework import permissions
+
+
+# TODO Change name to IsOwn or something similar
 class IsOwnArticle(permissions.BasePermission):
     """
     Object-level permission to only allow updating own article.

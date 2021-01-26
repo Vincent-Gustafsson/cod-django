@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from rest_framework import status
-from rest_framework.test import APITestCase, force_authenticate
+from rest_framework.test import APITestCase
 import faker
 
 from .models import Article, ArticleLike, Comment, CommentVote
@@ -32,7 +32,7 @@ class ArticleViewsTest(APITestCase):
             content='This is the content',
             user=self.user
         )
-            
+
     def test_create_article_authorized(self):
         url = reverse('article-list')
 
@@ -139,7 +139,7 @@ class CommentViewsTest(APITestCase):
             article=self.article,
             user=self.user
         )
-    
+
     def test_create_comment_authorized(self):
         url = reverse('comment-list')
 
@@ -173,7 +173,7 @@ class CommentViewsTest(APITestCase):
                 article=self.article,
                 user=self.user
             )
-        
+
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -196,4 +196,3 @@ class CommentViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-

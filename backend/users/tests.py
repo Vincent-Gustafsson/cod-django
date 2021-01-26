@@ -1,9 +1,7 @@
-import os, shutil
+import os
 
-from django.http import request
 from django.test import TestCase
 from django.urls import reverse
-from django.urls.base import resolve
 
 from rest_framework import status
 from rest_framework.test import APITestCase, force_authenticate
@@ -12,7 +10,6 @@ from rest_framework.authtoken.models import Token
 import faker
 
 from .models import User
-from .views import UserListRetrieveViewSet
 
 
 fake = faker.Faker()
@@ -20,15 +17,19 @@ fake = faker.Faker()
 
 class UserModelTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', email="test@gmail.com", password='12345')
+        self.user = User.objects.create_user(
+            username='testuser',
+            email="test@gmail.com",
+            password='12345'
+        )
 
     def test_create_user(self):
         self.assertTrue(isinstance(self.user, User))
         self.assertEqual(str(self.user), self.user.username)
-   
+
     def test_user_default_display_name(self):
         self.assertEqual(self.user.display_name, self.user.username)
-   
+
     def test_user_change_display_name(self):
         self.user.display_name = 'another_name'
         self.user.save()
@@ -107,7 +108,9 @@ class UserRegistrationViewTest(APITestCase):
         response = self.client.post(url, self.short_password_user, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertTrue('The password must be at least 6 characters long.' in response.json()['password'])
+        self.assertTrue(
+            'The password must be at least 6 characters long.' in response.json()['password']
+        )
 
     def test_password_validation_must_match(self):
         """ Tests if the password matching validation works. """
@@ -146,9 +149,18 @@ class AuthViewsTest(APITestCase):
     def test_login_user(self):
         url = reverse('rest_login')
 
-        user = User.objects.create_user(username='testLogin', email='testLogin@test.com', password='12345')
+        user = User.objects.create_user(
+            username='testLogin',
+            email='testLogin@test.com',
+            password='12345'
+        )
 
-        response = self.client.post(url, {'username':'testLogin','password':'12345'}, format='json')
+        data = {
+            'username': 'testLogin',
+            'password': '12345'
+        }
+
+        response = self.client.post(url, data, format='json')
 
         token = Token.objects.get(user=user)
 
@@ -158,12 +170,16 @@ class AuthViewsTest(APITestCase):
     def test_logout_user(self):
         url = reverse('rest_logout')
 
-        user = User.objects.create_user(username='testUserLogout', email='testUserLogout@test.com', password='12345')
+        user = User.objects.create_user(
+            username='testUserLogout',
+            email='testUserLogout@test.com',
+            password='12345'
+        )
         token = Token.objects.create(user=user)
 
         response = self.client.post(url)
         force_authenticate(response, user=user, token=token)
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_user_details(self):
@@ -177,7 +193,7 @@ class AuthViewsTest(APITestCase):
 
     def test_update_user_details(self):
         url = reverse('rest_user_details')
-        
+
         updated_username = fake.first_name()
 
         data = {'username': updated_username}
@@ -190,7 +206,7 @@ class AuthViewsTest(APITestCase):
 
     def test_change_password(self):
         url = reverse('rest_password_change')
-        
+
         new_password = fake.password()
         data = {'new_password1': new_password, 'new_password2': new_password}
 
@@ -209,7 +225,7 @@ class UserViewsTest(APITestCase):
     def setUp(self):
         for i in range(3):
             User.objects.create_user(
-                username= f'{i}{fake.first_name()}',
+                username=f'{i}{fake.first_name()}',
                 email=f'{i}{fake.email()}',
                 password=fake.password()
             )
@@ -220,7 +236,7 @@ class UserViewsTest(APITestCase):
         """ Tests if the user-list endpoint returns all the users """
         # TODO Will have to add test cases for search params and stuff
         url = reverse('user-list')
-        
+
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -228,7 +244,7 @@ class UserViewsTest(APITestCase):
 
         for (i, user) in enumerate(self.users):
             self.assertEqual(user.username, response.json()[i]['username'])
-    
+
     def test_retrieve_user(self):
         """ Tests if the user detail endpoint returns the right user """
         url = reverse('user-detail', kwargs={'pk': self.users[0].id})
@@ -251,14 +267,14 @@ class UserViewsTest(APITestCase):
 
     def test_update_user_profile(self):
         """ Tests if the user update profile endpoint works """
-        
+
         url = reverse('user-profile-update')
 
         user = self.users[0]
         original_avatar = self.users[0].avatar
 
         new_display_name = fake.first_name()
-        avatar_fp = r'C:\dev\cod\backend\media\uploads\avatars\r6.jpg'
+        avatar_fp = 'C:/dev/cod/backend/media/uploads/avatars/r6.jpg'
 
         with open(avatar_fp, 'rb') as avatar:
             data = {
@@ -266,7 +282,7 @@ class UserViewsTest(APITestCase):
                 'description': 'This is a test description.',
                 'avatar': avatar
             }
-            
+
             self.client.force_authenticate(user)
             response = self.client.patch(url, data, format='multipart')
 
@@ -279,14 +295,15 @@ class UserViewsTest(APITestCase):
 
     def tearDown(self):
         # All of this code may be unecessary, but it works.
-        
+
         directory = 'C:/dev/cod/backend/media/uploads/avatars'
         preserved_files = ('r6.jpg', 'default_avatar.png',)
 
         for filename in os.listdir(directory):
             file_path = os.path.join(directory, filename)
+            is_file = (os.path.isfile(file_path) or os.path.islink(file_path))
             try:
-                if (os.path.isfile(file_path) or os.path.islink(file_path)) and filename not in preserved_files:
+                if is_file and filename not in preserved_files:
                     os.unlink(file_path)
 
             except Exception as e:

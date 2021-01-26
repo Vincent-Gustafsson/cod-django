@@ -6,11 +6,12 @@ from .serializers import UserSerializer, UserProfileSerializer
 
 # User list, retrieve
 class UserListRetrieveViewSet(viewsets.GenericViewSet,
-                       mixins.ListModelMixin,
-                       mixins.RetrieveModelMixin):
+                              mixins.ListModelMixin,
+                              mixins.RetrieveModelMixin):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
 
 class UserDestroyView(generics.DestroyAPIView):
     queryset = User.objects.all()
@@ -24,7 +25,6 @@ class UserDestroyView(generics.DestroyAPIView):
             raise exceptions.NotFound()
 
 
-# TODO UPDATE PROFILE VIEW
 class UserProfileUpdateView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer

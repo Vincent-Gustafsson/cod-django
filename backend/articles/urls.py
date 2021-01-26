@@ -1,4 +1,4 @@
-from rest_framework import routers, urlpatterns
+from rest_framework import routers
 
 from .views import ArticleViewSet, CommentViewSet
 

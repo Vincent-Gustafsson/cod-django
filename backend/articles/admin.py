@@ -25,9 +25,8 @@ class CommentAdmin(admin.ModelAdmin):
     readonly_fields = ('score',)
 
 
-
-
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(ArticleLike)
+
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(CommentVote)

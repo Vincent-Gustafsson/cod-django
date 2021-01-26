@@ -17,15 +17,22 @@ class ArticleModelTest(TestCase):
             email=fake.email(),
             password=fake.password()
         )
-        
+
         self.article = Article.objects.create(
             title='Test',
             content="test 123",
             user=self.user
         )
-        
-        self.normal_like = ArticleLike.objects.create(article=self.article, user=self.user)
-        self.special_like = ArticleLike.objects.create(article=self.article, user=self.user, special_like=True)
+
+        self.normal_like = ArticleLike.objects.create(
+            article=self.article,
+            user=self.user
+        )
+        self.special_like = ArticleLike.objects.create(
+            article=self.article,
+            user=self.user,
+            special_like=True
+        )
 
     def test_create_user(self):
         self.assertTrue(isinstance(self.article, Article))
@@ -45,7 +52,7 @@ class CommentModelTest(TestCase):
             email=fake.email(),
             password=fake.password()
         )
-        
+
         self.article = Article.objects.create(
             title='Test',
             content="test 123",
@@ -70,12 +77,12 @@ class CommentModelTest(TestCase):
         )
 
         CommentVote.objects.create(downvote=True, user=self.user, comment=self.comment)
-    
+
     def test_create_comment(self):
         self.assertTrue(isinstance(self.comment, Comment))
         self.assertEqual(str(self.comment), f'{self.comment.body[:20]}...')
         self.assertEqual(self.article.comments_amount, 1)
-    
+
     def test_upvote_comment(self):
         upvotes_amount = self.comment.comment_votes.filter(downvote=False).count()
         self.assertEqual(upvotes_amount, 1)
