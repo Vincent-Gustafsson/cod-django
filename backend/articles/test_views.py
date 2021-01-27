@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 import faker
 
-from .models import Article, ArticleLike, Comment, CommentVote
+from .models import Article, ArticleLike, Comment
 from .serializers import ArticleSerializer
 
 
@@ -22,7 +22,7 @@ class ArticleViewsTest(APITestCase):
         )
 
         self.user_2 = User.objects.create_user(
-            username=fake.first_name(),
+            username=fake.first_name() + '0',
             email=fake.email(),
             password=fake.password()
         )
@@ -112,6 +112,197 @@ class ArticleViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ArticleLikeViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.owner = User.objects.create_user(
+            username=fake.first_name() + '0',
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.article = Article.objects.create(
+            title='Test title',
+            content='This is the content',
+            user=self.owner
+        )
+
+        self.article_2 = Article.objects.create(
+            title='Test title',
+            content='This is the content',
+            user=self.owner
+        )
+
+        self.like = ArticleLike(
+            user=self.user,
+            article=self.article
+        )
+
+        self.like_2 = ArticleLike(
+            user=self.user,
+            article=self.article_2
+        )
+
+        self.special_like = ArticleLike(
+            special_like=True,
+            user=self.user,
+            article=self.article
+        )
+
+        self.special_like_2 = ArticleLike(
+            special_like=True,
+            user=self.user,
+            article=self.article_2
+        )
+
+    def test_like_article(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json(), {'details': 'Liked article'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
+        self.assertEqual(ArticleLike.objects.get().user, self.user)
+        self.assertEqual(ArticleLike.objects.get().article, self.article)
+
+    def test_super_like_article(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        data = {'special_like': True}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json(), {'details': 'Superliked article'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
+        self.assertEqual(ArticleLike.objects.get().user, self.user)
+        self.assertEqual(ArticleLike.objects.get().article, self.article)
+
+    def test_article_cannot_be_found(self):
+        url = reverse('article-like', kwargs={'pk': 0})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_owner_cannot_like(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json(), {'details': 'Can\'t like your own post.'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
+
+    def test_owner_cannot_special_like(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        data = {'special_like': True}
+
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json(), {'details': 'Can\'t like your own post.'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
+
+    def test_cannot_like_twice(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.user)
+        self.client.post(url, format='json')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Can\'t like twice'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
+        self.assertEqual(ArticleLike.objects.get().user, self.user)
+
+    def test_cannot_special_like_twice(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        data = {'special_like': True}
+
+        self.client.force_authenticate(self.user)
+        self.client.post(url, data, format='json')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Can\'t special like twice'})
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
+        self.assertEqual(ArticleLike.objects.get().user, self.user)
+
+    def test_delete_like(self):
+        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        self.like.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
+
+    def test_delete_special_like(self):
+        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        self.special_like.save()
+
+        data = {'special_like': True}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
+
+    def test_delete_like_from_another_post(self):
+        url = reverse('article-unlike', kwargs={'pk': self.article_2.id})
+        self.like.save()
+        self.like_2.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
+        self.assertEqual(self.article_2.likes.count(), 0)
+
+    def test_delete_special_like_from_another_post(self):
+        url = reverse('article-unlike', kwargs={'pk': self.article_2.id})
+        self.special_like.save()
+        self.special_like_2.save()
+
+        data = {'special_like': True}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
+        self.assertEqual(self.article_2.likes.count(), 0)
 
 
 class CommentViewsTest(APITestCase):
