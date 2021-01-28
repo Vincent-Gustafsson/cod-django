@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -5,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 import faker
 
-from .models import Article, ArticleLike, Comment
+from .models import Article, ArticleLike, Comment, CommentVote
 from .serializers import ArticleSerializer
 
 
@@ -175,6 +177,13 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().user, self.user)
         self.assertEqual(ArticleLike.objects.get().article, self.article)
 
+    def test_cannot_like_unauthenticated(self):
+        url = reverse('article-like', kwargs={'pk': self.article.id})
+
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_super_like_article(self):
         url = reverse('article-like', kwargs={'pk': self.article.id})
 
@@ -263,6 +272,14 @@ class ArticleLikeViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
+
+    def test_cannot_delete_like_unauthenticated(self):
+        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        self.like.save()
+
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_special_like(self):
         url = reverse('article-unlike', kwargs={'pk': self.article.id})
@@ -387,3 +404,87 @@ class CommentViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class CommentVoteViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.article = Article.objects.create(
+            title='Test title',
+            content='This is the content',
+            user=self.user
+        )
+
+        self.comment = Comment.objects.create(
+            user=self.user,
+            article=self.article
+        )
+
+        self.comment_vote = CommentVote(
+            user=self.user,
+            comment=self.comment
+        )
+
+    def test_upvote_comment(self):
+        url = reverse('comment-vote', kwargs={'pk': self.comment.id})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(CommentVote.objects.filter(downvote=False).count(), 1)
+        self.assertEqual(self.comment.comment_votes.count(), 1)
+        self.assertEqual(self.comment.score, 1)
+
+    def test_downvote_comment(self):
+        url = reverse('comment-vote', kwargs={'pk': self.comment.id})
+
+        data = {'downvote': True}
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(CommentVote.objects.filter(downvote=True).count(), 1)
+        self.assertEqual(self.comment.comment_votes.count(), 1)
+        self.assertEqual(self.comment.score, -1)
+
+    def test_delete_comment_vote(self):
+        url = reverse('comment-vote-delete', kwargs={'pk': self.comment.id})
+        self.comment_vote.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertEqual(CommentVote.objects.filter(downvote=True).count(), 0)
+        self.assertEqual(self.comment.comment_votes.count(), 0)
+        self.assertEqual(self.comment.score, 0)
+
+    def test_comment_score(self):
+        url = reverse('comment-detail', kwargs={'pk': self.comment.id})
+
+        for _ in range(5):
+            CommentVote.objects.create(
+                downvote=bool(random.getrandbits(1)),
+                user=self.user,
+                comment=self.comment
+            )
+
+        upvote_amount = CommentVote.objects.filter(downvote=False).count()
+        downvote_amount = CommentVote.objects.filter(downvote=True).count()
+
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.json()['score'], self.comment.score)
+        self.assertEqual(response.json()['score'], upvote_amount - downvote_amount)

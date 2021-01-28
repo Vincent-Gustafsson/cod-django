@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, views, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .models import Article, ArticleLike, Comment
+from .models import Article, ArticleLike, Comment, CommentVote
 from .serializers import ArticleSerializer, CommentSerializer
 from .permissions import IsOwnArticle
 
@@ -22,6 +22,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class LikeArticleView(views.APIView):
+    permission_classes = (IsAuthenticated,)
     """ Handles creation of article likes. """
     def post(self, request, pk):
         user = request.user
@@ -73,6 +74,7 @@ class LikeArticleView(views.APIView):
 
 
 class UnlikeArticleView(views.APIView):
+    permission_classes = (IsAuthenticated,)
     """ Handles deletion of article likes. """
     def delete(self, request, pk):
         user = request.user
@@ -89,6 +91,7 @@ class UnlikeArticleView(views.APIView):
                                                         special_like=True)
 
         # TODO Not sure if the is_owner check is needed. But I'll save it just in case.
+        # TODO Maybe I don't need to check for special/normal lieks here.
         if not is_owner:
             if user_special_liked:
                 if request.data.get('special_like'):
@@ -109,3 +112,58 @@ class UnlikeArticleView(views.APIView):
             {'details': 'Can\'t like your own post.'},
             status=status.HTTP_403_FORBIDDEN
         )
+
+
+class UpvoteCommentView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    """ Handles creation of comment votes. """
+    def post(self, request, pk):
+        user = request.user
+        comment = get_object_or_404(Comment, pk=pk)
+
+        user_voted = CommentVote.objects.filter(user=user)
+
+        if not user_voted:
+            if request.data.get('downvote'):  
+                CommentVote.objects.create(
+                    downvote=True,
+                    user=user,
+                    comment=comment
+                )
+
+            else:
+                CommentVote.objects.create(
+                    user=user,
+                    comment=comment
+                )
+
+            return Response(
+                {'details': 'Voted on comment'},
+                status=status.HTTP_201_CREATED
+            )
+
+        else:
+            return Response(
+                {'details': 'Can\'t vote twice'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class DeleteCommentVoteView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    """ Handles deletion of comment votes. """
+    def delete(self, request, pk):
+        user = request.user
+
+        comment = get_object_or_404(Comment, pk=pk)
+        user_voted = CommentVote.objects.filter(comment=comment, user=user)
+
+        if user_voted:
+            user_voted.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        else:
+            return Response(
+                {'details': 'Can\'t unvote without voting'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
