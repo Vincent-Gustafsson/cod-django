@@ -21,6 +21,39 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
 
 
+class SaveArticleView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    """ Handles saving of articles. """
+    def post(self, request, pk):
+        user = request.user
+        article = get_object_or_404(Article, pk=pk)
+
+        is_owner = article.user.id == request.user.id
+
+        user_has_saved = article.saves.filter(pk=user.id)
+
+        if not is_owner:
+            if not user_has_saved:
+                user.saved_articles.add(article)
+
+                return Response(
+                    {'details': 'Saved article'},
+                    status=status.HTTP_200_OK
+                )
+
+            else:
+                return Response(
+                    {'details': 'You have already saved this article'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        else:
+            return Response(
+                {'details': 'You can\'t like your own post'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+
 class LikeArticleView(views.APIView):
     permission_classes = (IsAuthenticated,)
     """ Handles creation of article likes. """
@@ -124,7 +157,7 @@ class UpvoteCommentView(views.APIView):
         user_voted = CommentVote.objects.filter(user=user)
 
         if not user_voted:
-            if request.data.get('downvote'):  
+            if request.data.get('downvote'):
                 CommentVote.objects.create(
                     downvote=True,
                     user=user,

@@ -6,7 +6,7 @@ import faker
 from .models import Article, ArticleLike, Comment, CommentVote
 
 
-fake = faker.Faker()
+fake = faker.Faker('en')
 User = get_user_model()
 
 
@@ -39,10 +39,10 @@ class ArticleModelTest(TestCase):
         self.assertEqual(str(self.article), f'{self.article.title[:10]}...')
 
     def test_likes_count(self):
-        self.assertEqual(self.article.likes_amount, 1)
+        self.assertEqual(self.article.likes_count, 1)
 
     def test_special_likes_count(self):
-        self.assertEqual(self.article.special_likes_amount, 1)
+        self.assertEqual(self.article.special_likes_count, 1)
 
 
 class CommentModelTest(TestCase):
@@ -81,7 +81,7 @@ class CommentModelTest(TestCase):
     def test_create_comment(self):
         self.assertTrue(isinstance(self.comment, Comment))
         self.assertEqual(str(self.comment), f'{self.comment.body[:20]}...')
-        self.assertEqual(self.article.comments_amount, 1)
+        self.assertEqual(self.article.comments_count, 1)
 
     def test_upvote_comment(self):
         upvotes_amount = self.comment.comment_votes.filter(downvote=False).count()

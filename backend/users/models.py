@@ -37,7 +37,7 @@ class User(AbstractBaseUser):
     avatar = models.ImageField(upload_to='uploads/avatars',
                                default='uploads/avatars/default_avatar.png')
 
-    saved_articles = models.ManyToManyField('articles.Article', related_name='saved_by')
+    saved_articles = models.ManyToManyField('articles.Article', related_name='saves')
 
     date_joined = models.DateField(verbose_name='date joined', auto_now_add=True)
 

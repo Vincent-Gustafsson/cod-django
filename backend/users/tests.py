@@ -12,7 +12,7 @@ import faker
 from .models import User
 
 
-fake = faker.Faker()
+fake = faker.Faker('en')
 
 
 class UserModelTest(TestCase):

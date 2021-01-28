@@ -15,18 +15,22 @@ class Article(models.Model):
         return f'{self.title[:20]}...'
 
     @property
-    def likes_amount(self):
+    def likes_count(self):
         likes = self.likes.all()
-        return likes.filter(special_like=False).count()
+        return likes.filter(article=self, special_like=False).count()
 
     @property
-    def special_likes_amount(self):
+    def special_likes_count(self):
         likes = self.likes.all()
-        return likes.filter(special_like=True).count()
+        return likes.filter(article=self, special_like=True).count()
 
     @property
-    def comments_amount(self):
-        return Comment.objects.all().count()
+    def comments_count(self):
+        return Comment.objects.filter(article=self).count()
+
+    @property
+    def saved_count(self):
+        return self.saves.count()
 
 
 class ArticleLike(models.Model):

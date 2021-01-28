@@ -11,7 +11,7 @@ from .models import Article, ArticleLike, Comment, CommentVote
 from .serializers import ArticleSerializer
 
 
-fake = faker.Faker()
+fake = faker.Faker('en')
 User = get_user_model()
 
 
@@ -64,6 +64,16 @@ class ArticleViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_article_saved_count(self):
+        url = reverse('article-detail', kwargs={'pk': self.article.id})
+
+        self.user.saved_articles.add(self.article)
+
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['saved_count'], self.article.saves.count())
+
     def test_get_detail_article(self):
         url = reverse('article-detail', kwargs={'pk': self.article.id})
 
@@ -114,6 +124,57 @@ class ArticleViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ArticleSaveViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.owner = User.objects.create_user(
+            username=fake.first_name() + '0',
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.article = Article.objects.create(
+            title='Test title',
+            content='This is the content',
+            user=self.owner
+        )
+
+    def test_save_article(self):
+        url = reverse('article-save', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {'details': 'Saved article'})
+
+    def test_save_own_article(self):
+        url = reverse('article-save', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json(), {'details': 'You can\'t like your own post'})
+
+    def test_save_twice(self):
+        url = reverse('article-save', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.user)
+        self.client.post(url, format='json')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You have already saved this article'})
 
 
 class ArticleLikeViewsTest(APITestCase):

@@ -17,7 +17,7 @@ class CommentInlineAdmin(admin.StackedInline):
 
 
 class ArticleAdmin(admin.ModelAdmin):
-    readonly_fields = ('likes_amount', 'special_likes_amount', 'comments_amount')
+    readonly_fields = ('likes_count', 'special_likes_count', 'saved_count', 'comments_count')
     inlines = [CommentInlineAdmin]
 
 
