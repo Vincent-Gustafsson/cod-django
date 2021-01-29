@@ -49,7 +49,39 @@ class SaveArticleView(views.APIView):
 
         else:
             return Response(
-                {'details': 'You can\'t like your own post'},
+                {'details': 'You can\'t save your own article'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+
+class UnsaveArticleView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+    """ Handles saving of articles. """
+    def delete(self, request, pk):
+        user = request.user
+        article = get_object_or_404(Article, pk=pk)
+
+        is_owner = article.user.id == request.user.id
+
+        user_has_saved = article.saves.filter(pk=user.id)
+
+        if not is_owner:
+            if user_has_saved:
+                user.saved_articles.remove(article)
+
+                return Response(
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            else:
+                return Response(
+                    {'details': 'You must save before you can unsave'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        else:
+            return Response(
+                {'details': 'You unsave your own post'},
                 status=status.HTTP_403_FORBIDDEN
             )
 

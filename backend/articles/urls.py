@@ -4,7 +4,7 @@ from rest_framework import routers
 
 from .views import (ArticleViewSet, CommentViewSet, LikeArticleView,
                     UnlikeArticleView, UpvoteCommentView, DeleteCommentVoteView,
-                    SaveArticleView)
+                    SaveArticleView, UnsaveArticleView)
 
 
 router = routers.SimpleRouter()
@@ -40,5 +40,10 @@ urlpatterns = [
         'articles/<int:pk>/save/',
         SaveArticleView.as_view(),
         name='article-save'
+    ),
+    path(
+        'articles/<int:pk>/unsave/',
+        UnsaveArticleView.as_view(),
+        name='article-unsave'
     ),
 ] + router.urls

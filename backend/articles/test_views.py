@@ -162,7 +162,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.json(), {'details': 'You can\'t like your own post'})
+        self.assertEqual(response.json(), {'details': 'You can\'t save your own article'})
 
     def test_save_twice(self):
         url = reverse('article-save', kwargs={'pk': self.article.id})
@@ -175,6 +175,43 @@ class ArticleSaveViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {'details': 'You have already saved this article'})
+
+    def test_unsave(self):
+        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+
+        self.user.saved_articles.add(self.article)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertEqual(self.user.saved_articles.count(), 0)
+
+    def test_unsave_twice(self):
+        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+
+        self.user.saved_articles.add(self.article)
+
+        self.client.force_authenticate(self.user)
+        self.client.delete(url, format='json')
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You must save before you can unsave'})
+
+        self.assertEqual(self.user.saved_articles.count(), 0)
+
+    def test_unsave_own_article(self):
+        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json(), {'details': 'You unsave your own post'})
 
 
 class ArticleLikeViewsTest(APITestCase):
