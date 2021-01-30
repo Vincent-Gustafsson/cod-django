@@ -32,12 +32,13 @@ class User(AbstractBaseUser):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
     username = models.CharField(max_length=30, unique=True)
     display_name = models.CharField(max_length=30, blank=True, null=True)
-    description = models.CharField(max_length=150)
+    description = models.CharField(max_length=150, blank=True, null=True)
 
     avatar = models.ImageField(upload_to='uploads/avatars',
                                default='uploads/avatars/default_avatar.png')
 
-    saved_articles = models.ManyToManyField('articles.Article', related_name='saves')
+    saved_articles = models.ManyToManyField('articles.Article', related_name='saves',
+                                            blank=True)
 
     date_joined = models.DateField(verbose_name='date joined', auto_now_add=True)
 
