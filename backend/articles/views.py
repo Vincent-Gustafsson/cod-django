@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from rest_framework import viewsets, views, status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -19,6 +20,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            comment = self.get_object()
+            comment.deleted = True
+            comment.save()
+        except Http404:
+            return Response(data='could not delete', status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SaveArticleView(views.APIView):

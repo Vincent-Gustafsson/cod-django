@@ -458,9 +458,11 @@ class CommentViewsTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(self.article.comments.count(), 1)
         self.assertEqual(self.article.comments.get().body, 'Test Comment')
+        self.assertEqual(self.article.comments.get().parent, None)
 
     def test_create_comment_unauthorized(self):
         url = reverse('comment-list')
@@ -483,6 +485,7 @@ class CommentViewsTest(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(response.json(), ArticleSerializer(self.article).data)
 
     def test_delete_own_comment(self):
@@ -493,6 +496,7 @@ class CommentViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.article.comments.get().body, 'deleted')
 
     def test_delete_other_comment(self):
         self.comment.save()
@@ -502,6 +506,53 @@ class CommentViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cannot_create_child_with_another_article_id(self):
+        url = reverse('comment-list')
+
+        article_2 = Article.objects.create(
+            title='title',
+            content='content',
+            user=self.user
+        )
+
+        parent_comment = Comment.objects.create(
+            body='Parent comment',
+            user=self.user,
+            article=self.article
+        )
+
+        data = {
+            'body': 'Test Comment',
+            'article': article_2.id,
+            'parent': parent_comment.id
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(response.json(), {'non_field_errors': ['Parent comment must have the same article id']})
+
+    def test_create_child_comment(self):
+        self.comment.save()
+        url = reverse('comment-list')
+
+        data = {
+            'body': 'Test Comment',
+            'article': self.article.id,
+            'parent': self.comment.id
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(Comment.objects.count(), 2)
+        self.assertEqual(self.article.comments.count(), 2)
+        self.assertEqual(self.article.comments.get(pk=2).parent, self.comment)
 
 
 class CommentVoteViewsTest(APITestCase):
