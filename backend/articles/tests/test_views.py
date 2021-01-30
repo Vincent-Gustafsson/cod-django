@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 import faker
 
-from .models import Article, ArticleLike, Comment, CommentVote
-from .serializers import ArticleSerializer
+from ..models import Article, ArticleLike, Comment, CommentVote
+from ..serializers import ArticleSerializer
 
 
 fake = faker.Faker('en')
@@ -533,7 +533,10 @@ class CommentViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        self.assertEqual(response.json(), {'non_field_errors': ['Parent comment must have the same article id']})
+        self.assertEqual(
+            response.json(),
+            {'non_field_errors': ['Parent comment must have the same article id']}
+        )
 
     def test_create_child_comment(self):
         self.comment.save()

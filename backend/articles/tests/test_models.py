@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 import faker
 
-from .models import Article, ArticleLike, Comment, CommentVote
+from ..models import Article, ArticleLike, Comment, CommentVote
 
 
 fake = faker.Faker('en')
