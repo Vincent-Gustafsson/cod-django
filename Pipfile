@@ -13,6 +13,7 @@ django-cors-headers = "*"
 django-allauth = "*"
 dj-rest-auth = "*"
 pillow = "*"
+django-autoslug = "*"
 
 [requires]
 python_version = "3.8"
