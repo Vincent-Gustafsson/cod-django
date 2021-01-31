@@ -6,7 +6,9 @@ from autoslug import AutoSlugField
 
 class Tag(models.Model):
     name = models.CharField(max_length=20)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, blank=True, null=True)
+
+    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='name')
 
     def __str__(self):
         return self.name
@@ -19,7 +21,7 @@ class Article(models.Model):
     slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')
-    tags = models.ManyToManyField('Tag', related_name='articles')
+    tags = models.ManyToManyField('Tag', related_name='articles', blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

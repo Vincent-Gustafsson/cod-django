@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Article, ArticleLike, Comment, CommentVote
+from .models import Tag, Article, ArticleLike, Comment, CommentVote
 
 
 class CommentInlineAdmin(admin.StackedInline):
@@ -25,6 +25,8 @@ class ArticleAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     readonly_fields = ('score',)
 
+
+admin.site.register(Tag)
 
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(ArticleLike)
