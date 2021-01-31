@@ -1,10 +1,14 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from autoslug import AutoSlugField
+
 
 class Article(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
+
+    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')
 

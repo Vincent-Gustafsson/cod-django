@@ -22,7 +22,7 @@ class CommentSerializer(serializers.ModelSerializer):
         if data.get('parent'):
             if not data['article'].id == data['parent'].article.id:
                 raise ValidationError("Parent comment must have the same article id")
-            
+
             return data
 
         return data
@@ -44,7 +44,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = '__all__'
-        read_only_fields = ('user',)
+        read_only_fields = ('user', 'slug')
+        lookup_field = 'slug'
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

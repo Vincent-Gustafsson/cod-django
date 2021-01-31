@@ -65,7 +65,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_article_saved_count(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
 
@@ -75,14 +75,14 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.json()['saved_count'], self.article.saves.count())
 
     def test_get_detail_article(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_own_article(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {
             'title': 'Test title, updated',
@@ -97,7 +97,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(Article.objects.get(pk=self.article.id).content, data['content'])
 
     def test_update_other_article(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {
             'title': 'Test title, updated',
@@ -110,7 +110,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_own_article(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
         response = self.client.delete(url, format='json')
@@ -118,7 +118,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_other_article(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user_2)
         response = self.client.delete(url, format='json')
@@ -473,7 +473,7 @@ class CommentViewsTest(APITestCase):
 
     # Perhaps this should be bundled with the Article tests.
     def test_list_article_comments(self):
-        url = reverse('article-detail', kwargs={'pk': self.article.id})
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         for _ in range(2):
             Comment.objects.create(

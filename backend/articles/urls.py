@@ -10,8 +10,8 @@ from .views import (ArticleViewSet, CommentViewSet, LikeArticleView,
 router = routers.SimpleRouter()
 
 
-router.register('articles/', ArticleViewSet)
-router.register('comments/', CommentViewSet)
+router.register('articles', ArticleViewSet)
+router.register('comments', CommentViewSet)
 
 urlpatterns = [
     path(

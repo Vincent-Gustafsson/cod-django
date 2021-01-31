@@ -14,6 +14,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
+    lookup_field = 'slug'
 
 
 class CommentViewSet(viewsets.ModelViewSet):
