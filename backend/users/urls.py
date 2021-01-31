@@ -12,8 +12,9 @@ router = routers.SimpleRouter()
 router.register('users', UserListRetrieveViewSet)
 
 urlpatterns = [
+    # These two routes are kind of like "settings"
+    # Delete user
     path('users/delete/', UserDestroyView.as_view(), name='user-delete'),
+    # Update profile (update view for display_name, description and avatar)
     path('users/profile/', UserProfileUpdateView.as_view(), name="user-profile-update")
-]
-
-urlpatterns += router.urls
+] + router.urls
