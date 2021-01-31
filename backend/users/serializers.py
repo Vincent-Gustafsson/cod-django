@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 
 from .models import User
@@ -16,13 +18,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             }
         }
 
-    def validate_password(self, data):
+    def validate_username(self, username):
+        if not re.match(r'^\w+$', username):
+            # TODO Come up with a better error message
+            raise serializers.ValidationError('The username may only contain A-Z, a-z, 0-9 and _')
+        else:
+            return username
+
+    def validate_password(self, password):
         min_password_length = 6
-        if len(data) < min_password_length:
+        if len(password) < min_password_length:
             raise serializers.ValidationError('The password must be at least 6 characters long.')
 
         else:
-            return data
+            return password
 
     def save(self, request):
         user = User(

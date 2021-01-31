@@ -70,6 +70,35 @@ class UserRegistrationViewTest(APITestCase):
         self.assertEqual(User.objects.last().username, self.valid_user['username'])
         self.assertEqual(response.data['key'], Token.objects.get().key)
 
+    def test_username_valid(self):
+        url = reverse('rest_register')
+
+        response = self.client.post(url, self.valid_user, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_username_invalid(self):
+        url = reverse('rest_register')
+
+        data = {
+            'username': 'invalid_username',
+            'email': 'test@gmail.com',
+            'password': 'test12345'
+        }
+
+        base_username = data['username']
+
+        for char in ['@', '-', '#', '!', '?']:
+            data['username'] += char
+            response = self.client.post(url, data, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                response.json()['username'],
+                ['The username may only contain A-Z, a-z, 0-9 and _']
+            )
+
+            data['username'] = base_username
+
     def test_password_validation_length(self):
         """ Tests if the password length validation works. """
         url = reverse('rest_register')
