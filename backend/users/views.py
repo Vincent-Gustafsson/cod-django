@@ -11,6 +11,7 @@ class UserListRetrieveViewSet(viewsets.GenericViewSet,
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = 'slug'
 
 
 class UserDestroyView(generics.DestroyAPIView):

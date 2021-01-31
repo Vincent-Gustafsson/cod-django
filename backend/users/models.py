@@ -2,6 +2,8 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+from autoslug import AutoSlugField
+
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
@@ -33,6 +35,8 @@ class User(AbstractBaseUser):
     username = models.CharField(max_length=30, unique=True)
     display_name = models.CharField(max_length=30, blank=True, null=True)
     description = models.CharField(max_length=150, blank=True, null=True)
+
+    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='username')
 
     avatar = models.ImageField(upload_to='uploads/avatars',
                                default='uploads/avatars/default_avatar.png')

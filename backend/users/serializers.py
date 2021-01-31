@@ -44,7 +44,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'display_name', 'description', 'avatar', 'date_joined')
+        fields = ('username', 'display_name', 'description', 'avatar', 'date_joined', 'slug')
+        lookup_field = 'slug'
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -53,7 +54,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('display_name', 'description', 'avatar')
 
 
-# Kind of like USerSettings. THinking about changin the name.
+# Kind of like UserSettings. THinking about changin the name.
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

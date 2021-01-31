@@ -216,7 +216,7 @@ class UserViewsTest(APITestCase):
 
     def test_retrieve_user(self):
         """ Tests if the user detail endpoint returns the right user """
-        url = reverse('user-detail', kwargs={'pk': self.users[0].id})
+        url = reverse('user-detail', kwargs={'slug': self.users[0].slug})
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
