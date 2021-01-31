@@ -4,6 +4,14 @@ from django.contrib.auth import get_user_model
 from autoslug import AutoSlugField
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=20)
+    description = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
 class Article(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
@@ -11,6 +19,7 @@ class Article(models.Model):
     slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')
+    tags = models.ManyToManyField('Tag', related_name='articles')
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,8 +65,16 @@ class ArticleLike(models.Model):
 class Comment(models.Model):
     body = models.CharField(max_length=300)
 
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='children')
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, related_name='comments')
+    parent = models.ForeignKey('self',
+                               on_delete=models.SET_NULL,
+                               blank=True, null=True,
+                               related_name='children')
+
+    user = models.ForeignKey(get_user_model(),
+                             on_delete=models.CASCADE,
+                             null=True,
+                             related_name='comments')
+
     article = models.ForeignKey('Article', on_delete=models.CASCADE, related_name='comments')
 
     created_at = models.DateTimeField(auto_now_add=True)
