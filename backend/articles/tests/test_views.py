@@ -147,7 +147,7 @@ class ArticleSaveViewsTest(APITestCase):
         )
 
     def test_save_article(self):
-        url = reverse('article-save', kwargs={'pk': self.article.id})
+        url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
         response = self.client.post(url, format='json')
@@ -156,7 +156,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'Saved article'})
 
     def test_save_own_article(self):
-        url = reverse('article-save', kwargs={'pk': self.article.id})
+        url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
         response = self.client.post(url, format='json')
@@ -165,7 +165,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You can\'t save your own article'})
 
     def test_save_twice(self):
-        url = reverse('article-save', kwargs={'pk': self.article.id})
+        url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
         self.client.post(url, format='json')
@@ -177,7 +177,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You have already saved this article'})
 
     def test_unsave(self):
-        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+        url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
 
@@ -189,7 +189,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(self.user.saved_articles.count(), 0)
 
     def test_unsave_twice(self):
-        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+        url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
 
@@ -205,7 +205,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(self.user.saved_articles.count(), 0)
 
     def test_unsave_own_article(self):
-        url = reverse('article-unsave', kwargs={'pk': self.article.id})
+        url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
         response = self.client.delete(url, format='json')
@@ -263,7 +263,7 @@ class ArticleLikeViewsTest(APITestCase):
         )
 
     def test_like_article(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
         response = self.client.post(url, format='json')
@@ -276,14 +276,14 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().article, self.article)
 
     def test_cannot_like_unauthenticated(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_super_like_article(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
 
@@ -298,7 +298,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().article, self.article)
 
     def test_article_cannot_be_found(self):
-        url = reverse('article-like', kwargs={'pk': 0})
+        url = reverse('article-like', kwargs={'slug': 'invalid_slug'})
 
         self.client.force_authenticate(self.user)
         response = self.client.post(url, format='json')
@@ -306,7 +306,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_cannot_like(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
         response = self.client.post(url, format='json')
@@ -317,7 +317,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
 
     def test_owner_cannot_special_like(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
 
@@ -330,7 +330,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
 
     def test_cannot_like_twice(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
         self.client.post(url, format='json')
@@ -345,7 +345,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().user, self.user)
 
     def test_cannot_special_like_twice(self):
-        url = reverse('article-like', kwargs={'pk': self.article.id})
+        url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
 
@@ -362,7 +362,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().user, self.user)
 
     def test_delete_like(self):
-        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.like.save()
 
         self.client.force_authenticate(self.user)
@@ -372,7 +372,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
 
     def test_cannot_delete_like_unauthenticated(self):
-        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.like.save()
 
         response = self.client.delete(url, format='json')
@@ -380,7 +380,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_special_like(self):
-        url = reverse('article-unlike', kwargs={'pk': self.article.id})
+        url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.special_like.save()
 
         data = {'special_like': True}
@@ -392,7 +392,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
 
     def test_delete_like_from_another_post(self):
-        url = reverse('article-unlike', kwargs={'pk': self.article_2.id})
+        url = reverse('article-unlike', kwargs={'slug': self.article_2.slug})
         self.like.save()
         self.like_2.save()
 
@@ -405,7 +405,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(self.article_2.likes.count(), 0)
 
     def test_delete_special_like_from_another_post(self):
-        url = reverse('article-unlike', kwargs={'pk': self.article_2.id})
+        url = reverse('article-unlike', kwargs={'slug': self.article_2.slug})
         self.special_like.save()
         self.special_like_2.save()
 

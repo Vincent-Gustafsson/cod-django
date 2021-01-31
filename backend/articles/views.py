@@ -34,10 +34,12 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class SaveArticleView(views.APIView):
     permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
     """ Handles saving of articles. """
-    def post(self, request, pk):
+    def post(self, request, slug):
         user = request.user
-        article = get_object_or_404(Article, pk=pk)
+        article = get_object_or_404(Article, slug=slug)
 
         is_owner = article.user.id == request.user.id
 
@@ -67,10 +69,12 @@ class SaveArticleView(views.APIView):
 
 class UnsaveArticleView(views.APIView):
     permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
     """ Handles saving of articles. """
-    def delete(self, request, pk):
+    def delete(self, request, slug):
         user = request.user
-        article = get_object_or_404(Article, pk=pk)
+        article = get_object_or_404(Article, slug=slug)
 
         is_owner = article.user.id == request.user.id
 
@@ -99,10 +103,12 @@ class UnsaveArticleView(views.APIView):
 
 class LikeArticleView(views.APIView):
     permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
     """ Handles creation of article likes. """
-    def post(self, request, pk):
+    def post(self, request, slug):
         user = request.user
-        article = get_object_or_404(Article, pk=pk)
+        article = get_object_or_404(Article, slug=slug)
 
         is_owner = article.user.id == request.user.id
 
@@ -151,10 +157,12 @@ class LikeArticleView(views.APIView):
 
 class UnlikeArticleView(views.APIView):
     permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
     """ Handles deletion of article likes. """
-    def delete(self, request, pk):
+    def delete(self, request, slug):
         user = request.user
-        article = get_object_or_404(Article, pk=pk)
+        article = get_object_or_404(Article, slug=slug)
 
         is_owner = article.user.id == request.user.id
 
@@ -192,6 +200,7 @@ class UnlikeArticleView(views.APIView):
 
 class UpvoteCommentView(views.APIView):
     permission_classes = (IsAuthenticated,)
+
     """ Handles creation of comment votes. """
     def post(self, request, pk):
         user = request.user
@@ -227,6 +236,7 @@ class UpvoteCommentView(views.APIView):
 
 class DeleteCommentVoteView(views.APIView):
     permission_classes = (IsAuthenticated,)
+
     """ Handles deletion of comment votes. """
     def delete(self, request, pk):
         user = request.user

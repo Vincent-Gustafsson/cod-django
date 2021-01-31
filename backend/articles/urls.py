@@ -15,12 +15,12 @@ router.register('comments', CommentViewSet)
 
 urlpatterns = [
     path(
-        'articles/<int:pk>/like/',
+        'articles/<str:slug>/like/',
         LikeArticleView.as_view(),
         name='article-like'
     ),
     path(
-        'articles/<int:pk>/unlike/',
+        'articles/<str:slug>/unlike/',
         UnlikeArticleView.as_view(),
         name='article-unlike'
     ),
@@ -37,12 +37,12 @@ urlpatterns = [
     ),
 
     path(
-        'articles/<int:pk>/save/',
+        'articles/<str:slug>/save/',
         SaveArticleView.as_view(),
         name='article-save'
     ),
     path(
-        'articles/<int:pk>/unsave/',
+        'articles/<str:slug>/unsave/',
         UnsaveArticleView.as_view(),
         name='article-unsave'
     ),
