@@ -9,7 +9,7 @@ from .views import (UserListRetrieveViewSet,
 
 router = routers.SimpleRouter()
 
-router.register('users', UserListRetrieveViewSet, basename='User')
+router.register('users', UserListRetrieveViewSet, basename='user')
 
 urlpatterns = [
     # These two routes are kind of like "settings"
