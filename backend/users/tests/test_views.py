@@ -1,6 +1,7 @@
 import os
 
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from rest_framework import status
 from rest_framework.test import APITestCase, force_authenticate
@@ -8,10 +9,9 @@ from rest_framework.authtoken.models import Token
 
 import faker
 
-from ..models import User
-
 
 fake = faker.Faker('en')
+User = get_user_model()
 
 
 class UserRegistrationViewTest(APITestCase):
@@ -135,13 +135,13 @@ class AuthViewsTest(APITestCase):
         self.details_user = User.objects.create_user(
             username='testUserDetails',
             email='testUserDetails@test.com',
-            password='12345'
+            password=fake.password()
         )
 
         self.change_password_user = User.objects.create_user(
             username='testUserPassword',
             email='testUserPassword@test.com',
-            password='12345'
+            password=fake.password()
         )
 
     def test_login_user(self):
