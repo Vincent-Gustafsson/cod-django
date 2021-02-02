@@ -101,7 +101,7 @@ class ArticleTagViewsTest(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Tag.objects.get(pk=1).articles.count(), 0)     
+        self.assertEqual(Tag.objects.get(pk=1).articles.count(), 0)
 
 
 class ArticleViewsTest(APITestCase):
