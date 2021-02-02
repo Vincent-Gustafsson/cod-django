@@ -146,6 +146,22 @@ class ArticleViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_create_article_draft(self):
+        url = reverse('article-list')
+
+        data = {
+            'title': 'Test title. draft',
+            'content': 'This is the draft content',
+            'draft': True
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Article.drafts.count(), 1)
+        self.assertEqual(Article.drafts.get().user, self.user)
+
     def test_list_articles(self):
         url = reverse('article-list')
 

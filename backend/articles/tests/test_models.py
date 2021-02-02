@@ -77,6 +77,26 @@ class ArticleModelTest(TestCase):
     def test_special_likes_count(self):
         self.assertEqual(self.article.special_likes_count, 1)
 
+    def test_manager_only_fetches_non_drafts(self):
+        self.article_draft = Article.objects.create(
+            title='Test',
+            content="test 123",
+            user=self.user,
+            draft=True
+        )
+
+        self.assertEqual(Article.objects.count(), 1)
+
+    def test_manager_only_fetches_drafts(self):
+        self.article_draft = Article.objects.create(
+            title='Test',
+            content="test 123",
+            user=self.user,
+            draft=True
+        )
+
+        self.assertEqual(Article.drafts.count(), 1)
+
 
 class CommentModelTest(TestCase):
     def setUp(self):

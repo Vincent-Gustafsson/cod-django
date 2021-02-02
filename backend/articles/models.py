@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 
 from autoslug import AutoSlugField
 
+from .managers import ArticleManager, ArticleDraftsManager
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=20)
@@ -17,6 +19,7 @@ class Tag(models.Model):
 class Article(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
+    draft = models.BooleanField(default=False)
 
     slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
 
@@ -25,6 +28,10 @@ class Article(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Filters out drafts
+    objects = ArticleManager()
+    drafts = ArticleDraftsManager()
 
     def __str__(self):
         return f'{self.title[:20]}...'
