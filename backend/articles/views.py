@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django.http import Http404, request
+from django.http import Http404
 
 from rest_framework import viewsets, views, status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
