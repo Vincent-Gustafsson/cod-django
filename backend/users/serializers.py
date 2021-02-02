@@ -1,13 +1,14 @@
 import re
 
+from django.contrib.auth import password_validation
+
 from rest_framework import serializers
 
 from .models import User
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    # TODO Is the style argument needed? What does it even do?
-    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -26,12 +27,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             return username
 
     def validate_password(self, password):
-        min_password_length = 6
-        if len(password) < min_password_length:
-            raise serializers.ValidationError('The password must be at least 6 characters long.')
-
-        else:
-            return password
+        password_validation.validate_password(password, self.instance)
+        return password
 
     def save(self, request):
         user = User(
