@@ -26,7 +26,7 @@ class ArticleTagViewsTest(APITestCase):
         self.article = Article.objects.create(
             title='Test',
             content="test 123",
-            user=self.user
+            user=self.user,
         )
 
         tag_names = ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']
@@ -50,6 +50,58 @@ class ArticleTagViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(article_obj.tags.count(), 3)
+
+    def test_remove_one_tag_from_article(self):
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
+
+        data = {'tags': ['python', 'vue']}
+
+        self.article.tags.set((2, 3, 6))
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.article.tags.count(), 2)
+
+    def test_maximum_tags_validation_on_create(self):
+        url = reverse('article-list')
+
+        data = {
+            'title': 'Test_123',
+            'content': 'Test_content123',
+            'tags': ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You can\'t assign more than five tags'})
+
+    def test_maximum_tags_validation_on_put(self):
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
+
+        data = {'tags': ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']}
+
+        self.article.tags.set((2, 3, 6))
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You can\'t assign more than five tags'})
+
+    def test_article_removed_from_tag_relationship(self):
+        url = reverse('article-detail', kwargs={'slug': self.article.slug})
+
+        self.article.tags.add(1)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Tag.objects.get(pk=1).articles.count(), 0)     
 
 
 class ArticleViewsTest(APITestCase):
