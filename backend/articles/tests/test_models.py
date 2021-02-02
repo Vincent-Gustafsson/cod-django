@@ -1,13 +1,46 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 import faker
 
-from ..models import Article, ArticleLike, Comment, CommentVote
+from ..models import Tag, Article, ArticleLike, Comment, CommentVote
 
 
 fake = faker.Faker('en')
 User = get_user_model()
+
+
+class TagModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.article = Article.objects.create(
+            title='Test',
+            content="test 123",
+            user=self.user
+        )
+
+        tag_names = ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']
+        self.tags = []
+        for name in tag_names:
+            self.tags.append(Tag.objects.create(name=name))
+
+    def test_create_tag(self):
+        self.assertEqual(Tag.objects.count(), 6)
+
+    def test_maximum_tags_validation(self):
+        # Adds 5 tags to the article
+        for tag in self.tags[:5]:
+            self.article.tags.add(tag)
+
+        # Adds a 6th tag to the article which should trigger a Validation error.
+        with self.assertRaises(ValidationError):
+            self.article.tags.add(self.tags[5])
 
 
 class ArticleModelTest(TestCase):

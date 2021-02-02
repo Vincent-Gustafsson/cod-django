@@ -7,12 +7,49 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 import faker
 
-from ..models import Article, ArticleLike, Comment, CommentVote
+from ..models import Tag, Article, ArticleLike, Comment, CommentVote
 from ..serializers import ArticleSerializer
 
 
 fake = faker.Faker('en')
 User = get_user_model()
+
+
+class ArticleTagViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.article = Article.objects.create(
+            title='Test',
+            content="test 123",
+            user=self.user
+        )
+
+        tag_names = ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']
+        self.tags = []
+        for name in tag_names:
+            self.tags.append(Tag.objects.create(name=name))
+
+    def test_create_article_with_tags(self):
+        url = reverse('article-list')
+
+        data = {
+            'title': 'Test_123',
+            'content': 'Test_content_123',
+            'tags': ['javascript', 'frontend', 'vue']
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='json')
+
+        article_obj = Article.objects.get(pk=response.json()['id'])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(article_obj.tags.count(), 3)
 
 
 class ArticleViewsTest(APITestCase):

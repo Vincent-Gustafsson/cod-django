@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 
-from .models import Article, Comment
+from .models import Tag, Article, Comment
 
 
 class RecursiveCommentSerializer(serializers.Serializer):
@@ -34,6 +34,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    tags = serializers.SlugRelatedField(many=True, required=False, slug_field='slug', queryset=Tag.objects.all())
+
     comments = CommentSerializer(many=True, read_only=True)
 
     likes_count = serializers.ReadOnlyField()
@@ -44,10 +46,17 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = '__all__'
-        read_only_fields = ('user', 'slug')
+        read_only_fields = ('user', 'slug',)
         lookup_field = 'slug'
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
+        tags = validated_data.pop('tags', None)
+
         article = Article.objects.create(**validated_data)
+
+        if tags:
+            for tag in tags:
+                article.tags.add(tag)
+
         return article
