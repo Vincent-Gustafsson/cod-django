@@ -1,5 +1,6 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, request
 
 from rest_framework import viewsets, views, status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -11,10 +12,23 @@ from .permissions import IsOwnArticle
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
-    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
     lookup_field = 'slug'
+
+    def get_queryset(self):
+        queryset = Article.objects.all()
+
+        q = self.request.query_params.get('q', None)
+        tags = self.request.query_params.getlist('tag', None)
+
+        if q or tags:
+            queryset = queryset.filter(
+                Q(title__icontains=q) | Q(tags__slug__in=tags)
+            )
+            return queryset
+
+        return queryset
 
 
 class CommentViewSet(viewsets.ModelViewSet):

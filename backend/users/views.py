@@ -16,12 +16,12 @@ class UserListRetrieveViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         queryset = User.objects.all()
+        # q = query / search
+        q = self.request.query_params.get('q', None)
 
-        name = self.request.query_params.get('name', None)
-
-        if name:
+        if q:
             queryset = queryset.filter(
-                Q(username__icontains=name) | Q(display_name__icontains=name)
+                Q(username__icontains=q) | Q(display_name__icontains=q)
             )
 
         return queryset
