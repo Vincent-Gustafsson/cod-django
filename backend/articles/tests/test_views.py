@@ -1,4 +1,5 @@
 import random
+from typing import Dict
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -590,8 +591,6 @@ class CommentViewsTest(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(response.json(), ArticleSerializer(self.article).data)
 
     def test_delete_own_comment(self):
         self.comment.save()

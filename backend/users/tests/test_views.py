@@ -107,7 +107,7 @@ class UserRegistrationViewTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(
-            'This password is too short. It must contain at least 6 characters.' in response.json()['password']
+            'This password is too short. It must contain at least 6 characters.' in response.json()['password'] # noqa
         )
 
     def test_password_validation_must_match(self):

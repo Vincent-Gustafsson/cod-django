@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
+from django.urls import reverse
 
 from autoslug import AutoSlugField
 
@@ -36,6 +37,9 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+
+    def get_absolute_url(self):
+        return reverse('user-detail', kwargs={'slug': self.slug})
 
     def has_perm(self, perm, obj=None):
         return self.is_admin

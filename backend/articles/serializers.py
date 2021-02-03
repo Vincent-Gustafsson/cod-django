@@ -1,7 +1,12 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 
 from .models import Tag, Article, Comment
+
+
+User = get_user_model()
 
 
 class RecursiveCommentSerializer(serializers.Serializer):
@@ -10,11 +15,20 @@ class RecursiveCommentSerializer(serializers.Serializer):
         return serializer.data
 
 
+class CommentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('display_name', 'slug', 'avatar',)
+        read_only_fields = ('display_name', 'slug', 'avatar',)
+
+
 class CommentSerializer(serializers.ModelSerializer):
     children = RecursiveCommentSerializer(many=True, read_only=True)
+    user = CommentUserSerializer(read_only=True)
 
     class Meta:
         model = Comment
+        # TODO parent, article fields may be unneeded
         fields = ('id', 'body', 'user', 'article', 'score', 'parent', 'children', 'created_at',)
         read_only_fields = ('user',)
 
