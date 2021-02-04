@@ -46,3 +46,20 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+class UserFollowing(models.Model):
+    user_follows = models.ForeignKey('User', related_name="following", on_delete=models.CASCADE)
+    user_followed = models.ForeignKey('User', related_name="followers", on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user_follows', 'user_followed'],
+                name="unique_followers"
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.user_follows} follows {self.user_followed}'
