@@ -4,7 +4,7 @@ from django.contrib.auth import password_validation
 
 from rest_framework import serializers
 
-from .models import User
+from .models import User, UserFollowing
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -47,11 +47,53 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+class FollowingSerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserFollowing
+        fields = ('id', 'slug', 'display_name',)
+
+    def get_display_name(self, obj):
+        return obj.user_followed.display_name
+
+    def get_slug(self, obj):
+        return obj.user_followed.slug
+
+
+class FollowersSerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserFollowing
+        fields = ('id', 'slug', 'display_name',)
+
+    def get_display_name(self, obj):
+        return obj.user_follows.display_name
+
+    def get_slug(self, obj):
+        return obj.user_follows.slug
+
+
 class UserSerializer(serializers.ModelSerializer):
+    following = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('username', 'display_name', 'description', 'avatar', 'date_joined', 'slug')
+        fields = ('username', 'display_name', 'description', 'avatar',
+                  'date_joined', 'slug', 'followers', 'following',)
         lookup_field = 'slug'
+
+    def get_following(self, obj):
+        # Add count
+        return FollowingSerializer(obj.following.all(), many=True).data
+
+    def get_followers(self, obj):
+        # Add count
+        return FollowersSerializer(obj.followers.all(), many=True).data
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -60,7 +102,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('display_name', 'description', 'avatar')
 
 
-# Kind of like UserSettings. THinking about changin the name.
+# TODO Kind of like UserSettings. Thinking about changin the name.
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

@@ -1,8 +1,11 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
-from rest_framework import viewsets, mixins, generics, exceptions
+from rest_framework import status, viewsets, mixins, generics, exceptions, views
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from .models import User
+from .models import User, UserFollowing
 from .serializers import UserSerializer, UserProfileSerializer
 
 
@@ -49,3 +52,72 @@ class UserProfileUpdateView(generics.UpdateAPIView):
             return instance
         except User.DoesNotExist:
             raise exceptions.NotFound()
+
+
+class FollowUserView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        user = request.user
+        user_to_follow = get_object_or_404(User, slug=slug)
+
+        is_self = user == user_to_follow
+
+        already_following = UserFollowing.objects.filter(user_follows=user)
+
+        if not is_self:
+            if not already_following:
+                UserFollowing.objects.create(
+                    user_follows=user,
+                    user_followed=user_to_follow
+                )
+
+                return Response(
+                    {'details': 'Follow successful'},
+                    status=status.HTTP_201_CREATED
+                )
+
+            else:
+                return Response(
+                    {'details': 'Already following'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        else:
+            return Response(
+                {'details': 'Can\'t follow yourself'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class UnfollowUserView(views.APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, slug):
+        user = request.user
+        user_to_unfollow = get_object_or_404(User, slug=slug)
+
+        following_obj = UserFollowing.objects.filter(user_followed=user_to_unfollow)
+
+        is_self = user == user_to_unfollow
+
+        if not is_self:
+            if following_obj:
+                following_obj.delete()
+
+                return Response(
+                    {'details': 'Unfollow successful'},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            else:
+                return Response(
+                    {'details': 'You\'re not following that person'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        else:
+            return Response(
+                {'details': 'Can\'t unfollow yourself'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

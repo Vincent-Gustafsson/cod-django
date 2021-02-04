@@ -4,7 +4,9 @@ from rest_framework import routers
 
 from .views import (UserListRetrieveViewSet,
                     UserDestroyView,
-                    UserProfileUpdateView)
+                    UserProfileUpdateView,
+                    FollowUserView,
+                    UnfollowUserView)
 
 
 router = routers.SimpleRouter()
@@ -16,5 +18,8 @@ urlpatterns = [
     # Delete user
     path('users/delete/', UserDestroyView.as_view(), name='user-delete'),
     # Update profile (update view for display_name, description and avatar)
-    path('users/profile/', UserProfileUpdateView.as_view(), name="user-profile-update")
+    path('users/profile/', UserProfileUpdateView.as_view(), name="user-profile-update"),
+
+    path('users/<str:slug>/follow', FollowUserView.as_view(), name="user-follow"),
+    path('users/<str:slug>/unfollow', UnfollowUserView.as_view(), name="user-unfollow")
 ] + router.urls
