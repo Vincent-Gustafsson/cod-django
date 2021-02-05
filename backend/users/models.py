@@ -38,6 +38,10 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.username
 
+    @property
+    def reports_count(self):
+        return self.reports.count()
+
     def get_absolute_url(self):
         return reverse('user-detail', kwargs={'slug': self.slug})
 

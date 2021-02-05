@@ -113,6 +113,10 @@ class Comment(models.Model):
 
         return 0
 
+    @property
+    def reports_count(self):
+        return self.reports.count()
+
 
 class CommentVote(models.Model):
     downvote = models.BooleanField(default=False)

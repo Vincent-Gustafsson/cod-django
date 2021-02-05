@@ -6,7 +6,7 @@ from django.db import models
 class Report(models.Model):
     message = models.CharField(max_length=500, blank=True, null=True)
 
-    # reason = models.ChoiceField()
+    # offense = models.ChoiceField()
     # Will implement later
     # Will either be a reason model or just a list of strings
 
