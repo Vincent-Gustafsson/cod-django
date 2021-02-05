@@ -9,6 +9,8 @@ from rest_framework.authtoken.models import Token
 
 import faker
 
+from ..models import UserFollowing
+
 
 fake = faker.Faker('en')
 User = get_user_model()
@@ -306,3 +308,138 @@ class UserViewsTest(APITestCase):
 
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
+class FollowViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.user_2 = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.follow_obj = UserFollowing(
+            user_follows=self.user,
+            user_followed=self.user_2
+        )
+
+    def test_follow_user(self):
+        url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json(), {'details': 'follow successful'})
+
+        self.assertEqual(UserFollowing.objects.count(), 1)
+        self.assertEqual(UserFollowing.objects.get().user_follows, self.user)
+        self.assertEqual(UserFollowing.objects.get().user_followed, self.user_2)
+
+    def test_unfollow_user(self):
+        self.follow_obj.save()
+        url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertEqual(UserFollowing.objects.count(), 0)
+
+    def test_follow_self(self):
+        url = reverse('user-follow', kwargs={'slug': self.user.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Can\'t follow yourself'})
+
+    def test_unfollow_self(self):
+        url = reverse('user-unfollow', kwargs={'slug': self.user.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Can\'t unfollow yourself'})
+
+    def test_already_following(self):
+        self.follow_obj.save()
+        url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Already following'})
+
+        self.assertEqual(UserFollowing.objects.count(), 1)
+
+    def test_already_not_following(self):
+        url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You\'re not following that person'})
+
+    def test_follow_invalid_user(self):
+        """
+        Responds with 404 if the user does not exist (if the slug is invalid).
+        """
+        url = reverse('user-follow', kwargs={'slug': 'does-not-exist'})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json(), {'detail': 'Not found.'})
+
+    def test_unfollow_invalid_user(self):
+        """
+        Responds with 404 if the user does not exist (if the slug is invalid).
+        """
+        url = reverse('user-unfollow', kwargs={'slug': 'does-not-exist'})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json(), {'detail': 'Not found.'})
+
+    def test_follow_unauthenticated(self):
+        """
+        Responds with 401 Unauthorized.
+        """
+        url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
+
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json(),
+            {'detail': 'Authentication credentials were not provided.'}
+        )
+
+    def test_unfollow_unauthenticated(self):
+        """
+        Responds with 401 Unauthorized.
+        """
+        url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
+
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json(),
+            {'detail': 'Authentication credentials were not provided.'}
+        )

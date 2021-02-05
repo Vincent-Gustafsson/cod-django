@@ -73,7 +73,7 @@ class FollowUserView(views.APIView):
                 )
 
                 return Response(
-                    {'details': 'Follow successful'},
+                    {'details': 'follow successful'},
                     status=status.HTTP_201_CREATED
                 )
 
@@ -105,10 +105,7 @@ class UnfollowUserView(views.APIView):
             if following_obj:
                 following_obj.delete()
 
-                return Response(
-                    {'details': 'Unfollow successful'},
-                    status=status.HTTP_204_NO_CONTENT
-                )
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
             else:
                 return Response(
