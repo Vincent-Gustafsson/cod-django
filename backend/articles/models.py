@@ -54,6 +54,10 @@ class Article(models.Model):
     def saved_count(self):
         return self.saves.count()
 
+    @property
+    def reports_count(self):
+        return self.reports.count()
+
 
 class ArticleLike(models.Model):
     special_like = models.BooleanField(default=False)
