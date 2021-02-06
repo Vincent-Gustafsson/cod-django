@@ -6,7 +6,15 @@ from .models import Report
 from .serializers import ReportSerializer
 from .permissions import IsModeratorOrCreateOnly
 
+# When I want to fetch all reports I'm actually going to have to send three requests.
+# This is not very performant but I've already implemented the whole moderation system.
 
+# If I want to change it to some kind of nested serializer with all the different objects
+# in separate arrays I would've had to rewrite most of the code.
+
+# But since the moderation dashboard won't be accessed as often as the rest of the website
+# it's not as bad. There will be A LOT less requests from the moderation dashboard than
+# the rest of the website. Thanks for coming to my TED Talk.
 class ReportViewSet(viewsets.GenericViewSet,
                     mixins.CreateModelMixin,
                     mixins.ListModelMixin,
@@ -17,9 +25,12 @@ class ReportViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         qs = Report.objects.all()
+
         report_obj_type = self.request.query_params.get('type', None)
         moderated = self.request.query_params.get('moderated', None)
+        order = self.request.query_params.get('order_by', None)
 
+        # Sorts by reported object type (article, comment or user).
         if report_obj_type:
             if report_obj_type == 'articles':
                 qs = qs.filter(article__isnull=False)
@@ -30,10 +41,20 @@ class ReportViewSet(viewsets.GenericViewSet,
             elif report_obj_type == 'users':
                 qs = qs.filter(user__isnull=False)
 
+        # Sorts by moderated (has the report been moderated yes/no).
         if moderated:
             qs = qs.filter(moderated=True)
         else:
             qs = qs.filter(moderated=False)
+
+        # Sorts by newest or oldest.
+        if order:
+            if order == 'newest':
+                qs = qs.order_by('-created_at')
+
+            elif order == 'oldest':
+                qs = qs.order_by('created_at')
+
 
         return qs
 

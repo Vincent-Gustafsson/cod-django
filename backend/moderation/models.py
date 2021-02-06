@@ -6,9 +6,8 @@ from django.db import models
 class Report(models.Model):
     message = models.CharField(max_length=500, blank=True, null=True)
 
-    # offense = models.ChoiceField()
-    # Will implement later
-    # Will either be a reason model or just a list of strings
+    # Should the on_delete be CASCADE or not?
+    # offense = models.ForeignKey('Reason', models.CASCADE, related_name='reports')
 
     article = models.ForeignKey('articles.Article', models.CASCADE, related_name='reports',
                                 blank=True, null=True)
