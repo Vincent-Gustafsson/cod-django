@@ -28,6 +28,7 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_moderator = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
 

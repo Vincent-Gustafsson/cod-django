@@ -1,10 +1,10 @@
 from rest_framework import routers, urlpatterns
 
-from .views import ArticleReportViewSet
+from .views import ReportViewSet
 
 
 router = routers.SimpleRouter()
 
-router.register('article-reports', ArticleReportViewSet, basename='Report')
+router.register('reports', ReportViewSet, basename='report')
 
 urlpatterns = router.urls

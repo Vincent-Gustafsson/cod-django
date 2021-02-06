@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
 
 from articles.models import Article, Comment
 
@@ -53,12 +54,22 @@ class ReportedUserSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     reported_obj = serializers.SerializerMethodField()
     reported_by_display_name = serializers.SerializerMethodField()
-    reported_by = serializers.SerializerMethodField()
+    reported_by_slug = serializers.SerializerMethodField()
 
     class Meta:
         model = Report
         fields = ('id', 'message', 'created_at', 'reported_obj',
-                  'reported_by', 'reported_by_display_name',)
+                  'reported_by', 'reported_by_display_name', 'reported_by_slug',
+                  'article', 'comment', 'user', 'moderated')
+
+        read_only_fields = ('reported_by',)
+
+        # Repetition here, could've used "fromkeys()" but this is simpler to understand. KISS.
+        extra_kwargs = {
+            'article': {'write_only': True},
+            'comment': {'write_only': True},
+            'user': {'write_only': True}
+        }
 
     def get_reported_obj(self, obj):
         if obj.article:
@@ -70,8 +81,44 @@ class ReportSerializer(serializers.ModelSerializer):
         elif obj.user:
             return ReportedUserSerializer(obj.user).data
 
-    def get_reported_by(self, obj):
+    def get_reported_by_slug(self, obj):
         return obj.reported_by.slug
 
     def get_reported_by_display_name(self, obj):
         return obj.reported_by.display_name
+
+    def create(self, validated_data):
+        article = validated_data.pop('article', None)
+        comment = validated_data.pop('comment', None)
+        user = validated_data.pop('user', None)
+
+        reported_by = self.context['request'].user
+
+        # TODO Maybe this check should be handled in validate() instead.
+        if article:
+            comment = user = None
+            if reported_by == article.user:
+                raise ValidationError({'details': 'Can\'t report your own article.'})
+
+        elif comment:
+            article = user = None
+            if reported_by == comment.user:
+                raise ValidationError({'details': 'Can\'t report your own comment.'})
+
+        elif user:
+            article = comment = None
+            if reported_by == user:
+                raise ValidationError({'details': 'Can\'t report yourself.'})
+
+        else:
+            raise ValidationError({'details': 'Can\'t report multiple, or no, objects.'})
+
+        report = Report.objects.create(
+            message=validated_data.pop('message', None),
+            article=article,
+            comment=comment,
+            user=user,
+            reported_by=reported_by
+        )
+
+        return report
