@@ -15,7 +15,7 @@ from .permissions import IsModeratorOrCreateOnly
 # But since the moderation dashboard won't be accessed as often as the rest of the website
 # it's not as bad. There will be A LOT less requests from the moderation dashboard than
 # the rest of the website. Thanks for coming to my TED Talk.
-class ReportViewSet(viewsets.GenericViewSet,
+class ReportViewSet(viewsets.GenericViewSet,  # noqa
                     mixins.CreateModelMixin,
                     mixins.ListModelMixin,
                     mixins.RetrieveModelMixin,
@@ -54,7 +54,6 @@ class ReportViewSet(viewsets.GenericViewSet,
 
             elif order == 'oldest':
                 qs = qs.order_by('created_at')
-
 
         return qs
 
