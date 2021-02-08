@@ -12,6 +12,7 @@ from .permissions import IsOwnArticle
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
+    """ Handles creation, updating & deletion of articles. """
     serializer_class = ArticleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
     lookup_field = 'slug'
@@ -32,6 +33,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """ Handles creation, updating & deletion of comments. """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
@@ -47,10 +49,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class SaveArticleView(views.APIView):
+    """ Handles saving of articles. """
     permission_classes = (IsAuthenticated,)
     lookup_field = 'slug'
 
-    """ Handles saving of articles. """
     def post(self, request, slug):
         user = request.user
         article = get_object_or_404(Article, slug=slug)
@@ -82,10 +84,10 @@ class SaveArticleView(views.APIView):
 
 
 class UnsaveArticleView(views.APIView):
+    """ Handles unsaving of articles. """
     permission_classes = (IsAuthenticated,)
     lookup_field = 'slug'
 
-    """ Handles saving of articles. """
     def delete(self, request, slug):
         user = request.user
         article = get_object_or_404(Article, slug=slug)
@@ -116,10 +118,10 @@ class UnsaveArticleView(views.APIView):
 
 
 class LikeArticleView(views.APIView):
+    """ Handles liking of articles. """
     permission_classes = (IsAuthenticated,)
     lookup_field = 'slug'
 
-    """ Handles creation of article likes. """
     def post(self, request, slug):
         user = request.user
         article = get_object_or_404(Article, slug=slug)
@@ -170,10 +172,10 @@ class LikeArticleView(views.APIView):
 
 
 class UnlikeArticleView(views.APIView):
+    """ Handles unliking of articles. """
     permission_classes = (IsAuthenticated,)
     lookup_field = 'slug'
 
-    """ Handles deletion of article likes. """
     def delete(self, request, slug):
         user = request.user
         article = get_object_or_404(Article, slug=slug)
@@ -213,9 +215,9 @@ class UnlikeArticleView(views.APIView):
 
 
 class UpvoteCommentView(views.APIView):
+    """ Handles creation of comment votes. """
     permission_classes = (IsAuthenticated,)
 
-    """ Handles creation of comment votes. """
     def post(self, request, pk):
         user = request.user
         comment = get_object_or_404(Comment, pk=pk)
@@ -249,9 +251,9 @@ class UpvoteCommentView(views.APIView):
 
 
 class DeleteCommentVoteView(views.APIView):
+    """ Handles deletion of comment votes. """
     permission_classes = (IsAuthenticated,)
 
-    """ Handles deletion of comment votes. """
     def delete(self, request, pk):
         user = request.user
 

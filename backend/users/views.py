@@ -9,11 +9,10 @@ from .models import User, UserFollowing
 from .serializers import UserSerializer, UserProfileSerializer
 
 
-# User list, retrieve
 class UserListRetrieveViewSet(viewsets.GenericViewSet,
                               mixins.ListModelMixin,
                               mixins.RetrieveModelMixin):
-
+    """ Handles listing, details & creation of users. """
     serializer_class = UserSerializer
     lookup_field = 'slug'
 
@@ -31,6 +30,7 @@ class UserListRetrieveViewSet(viewsets.GenericViewSet,
 
 
 class UserDestroyView(generics.DestroyAPIView):
+    """ Handles the deletion of users. """
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -43,6 +43,7 @@ class UserDestroyView(generics.DestroyAPIView):
 
 
 class UserProfileUpdateView(generics.UpdateAPIView):
+    """ User profile view. """
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
 
@@ -55,6 +56,7 @@ class UserProfileUpdateView(generics.UpdateAPIView):
 
 
 class FollowUserView(views.APIView):
+    """ Handles following of users. """
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, slug):
@@ -91,6 +93,7 @@ class FollowUserView(views.APIView):
 
 
 class UnfollowUserView(views.APIView):
+    """ Handles unfollowing of users. """
     permission_classes = (IsAuthenticated,)
 
     def delete(self, request, slug):
