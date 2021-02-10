@@ -2,13 +2,17 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
-from rest_framework import viewsets, views, status
+from rest_framework import viewsets, views, status, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from .models import Article, ArticleLike, Comment, CommentVote
-from .serializers import ArticleSerializer, CommentSerializer
+from .serializers.article_serializers import ArticleSerializer, CommentSerializer
+from .serializers.feed_serializers import (ArticleFeedSerializer,
+                                           FollowedTagsSerializer,
+                                           FollowedUsersSerializer)
 from .permissions import IsOwnArticle
+from .pagination import FeedPagination
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
@@ -269,3 +273,55 @@ class DeleteCommentVoteView(views.APIView):
                 {'details': 'Can\'t unvote without voting'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class ArticleFeedView(generics.ListAPIView):
+    serializer_class = ArticleFeedSerializer
+    pagination_class = FeedPagination
+
+    def get_queryset(self):
+        user = self.request.user
+
+        qs = Article.objects.all().order_by('id')
+
+        if user.is_authenticated:
+            # Gets all articles with the tags that the user is following.
+            tags = user.followed_tags.all()
+            tags_articles = Article.objects.filter(tags__in=tags).distinct()
+
+            # Gets all articles with the owners that the user is following.
+            following = user.following.values_list('user_followed', flat=True)
+            following_articles = Article.objects.filter(user_id__in=following).distinct()
+
+            # Combines the two querysets
+            qs = tags_articles | following_articles
+            # Removes all the users own articles from
+            # the queryset and orders it by newest to oldest.
+            qs = qs.exclude(user=self.request.user).order_by('id')
+
+            return qs
+
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        user = self.request.user
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        response_data = []
+
+        if user.is_authenticated:
+            followed_tags = FollowedTagsSerializer('', context={'request': self.request}).data
+            followed_users = FollowedUsersSerializer('', context={'request': self.request}).data
+            response_data.extend((followed_tags, followed_users,))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            articles = self.get_serializer(page, many=True).data
+            response_data.append(articles)
+            return self.get_paginated_response(response_data)
+
+        articles = self.get_serializer(queryset, many=True).data
+        response_data.append(articles)
+
+        return Response(response_data)

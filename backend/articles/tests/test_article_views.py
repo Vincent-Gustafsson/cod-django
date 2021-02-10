@@ -8,7 +8,6 @@ from rest_framework.test import APITestCase
 import faker
 
 from ..models import Tag, Article, ArticleLike, Comment, CommentVote
-from ..serializers import ArticleSerializer
 
 
 fake = faker.Faker('en')
