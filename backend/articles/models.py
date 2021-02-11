@@ -13,7 +13,7 @@ class Tag(models.Model):
     slug = AutoSlugField(null=True, default=None, unique=True, populate_from='name')
 
     followers = models.ManyToManyField('users.User', related_name='followed_tags',
-                                       blank=True, null=True)
+                                       blank=True)
 
     def __str__(self):
         return self.name
