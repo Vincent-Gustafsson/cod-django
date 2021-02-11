@@ -6,7 +6,7 @@ from rest_framework import viewsets, views, status, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .models import Article, ArticleLike, Comment, CommentVote
+from .models import Tag, Article, ArticleLike, Comment, CommentVote
 from .serializers.article_serializers import ArticleSerializer, CommentSerializer
 from .serializers.feed_serializers import (ArticleFeedSerializer,
                                            FollowedTagsSerializer,
@@ -325,3 +325,50 @@ class ArticleFeedView(generics.ListAPIView):
         response_data.append(articles)
 
         return Response(response_data)
+
+
+class FollowTagView(views.APIView):
+    """ Handles following of tags. """
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        user = request.user
+        tag_to_follow = get_object_or_404(Tag, slug=slug)
+
+        already_following = tag_to_follow.followers.all().filter(pk=user.id)
+
+        if not already_following:
+            tag_to_follow.followers.add(user)
+
+            return Response(
+                {'details': 'follow successful'},
+                status=status.HTTP_201_CREATED
+            )
+
+        else:
+            return Response(
+                {'details': 'Already following'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class UnfollowTagView(views.APIView):
+    """ Handles unfollowing of tags. """
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, slug):
+        user = request.user
+        tag_to_unfollow = get_object_or_404(Tag, slug=slug)
+
+        following_obj = tag_to_unfollow.followers.filter(pk=user.id)
+
+        if following_obj:
+            tag_to_unfollow.followers.remove(user)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        else:
+            return Response(
+                {'details': 'You\'re not following that tag'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

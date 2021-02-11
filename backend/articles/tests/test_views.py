@@ -742,3 +742,59 @@ class CommentVoteViewsTest(APITestCase):
 
         self.assertEqual(response.json()['score'], self.comment.score)
         self.assertEqual(response.json()['score'], upvote_amount - downvote_amount)
+
+
+class FollowViewsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username=fake.first_name(),
+            email=fake.email(),
+            password=fake.password()
+        )
+
+        self.tag = Tag.objects.create(name='Python')
+
+    def test_follow_tag(self):
+        """ User starts to follow the tag. """
+        url = reverse('tag-follow', kwargs={'slug': self.tag.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json(), {'details': 'follow successful'})
+
+    def test_follow_tag_twice(self):
+        """ User can't follow a tag twice. """
+        url = reverse('tag-follow', kwargs={'slug': self.tag.slug})
+
+        self.tag.followers.add(self.user)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'Already following'})
+
+    def test_unfollow_tag(self):
+        """ User unfollows the tag. """
+        url = reverse('tag-unfollow', kwargs={'slug': self.tag.slug})
+
+        self.tag.followers.add(self.user)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_unfollow_not_followed_tag(self):
+        """ User can't unfollow the tag because he hasn't followed it yet. """
+        url = reverse('tag-unfollow', kwargs={'slug': self.tag.slug})
+
+        self.tag.followers.remove(self.user)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {'details': 'You\'re not following that tag'})
