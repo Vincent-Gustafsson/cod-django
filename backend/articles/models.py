@@ -23,6 +23,7 @@ class Article(models.Model):
     title = models.CharField(max_length=50)
     content = models.TextField()
     draft = models.BooleanField(default=False)
+    thumbnail = models.ImageField(upload_to='uploads/thumbnails', blank=True, null=True)
 
     slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
 

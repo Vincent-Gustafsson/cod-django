@@ -35,7 +35,7 @@ class ArticleFeedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('title', 'slug', 'tags', 'content', 'likes_count', 'created_at',
-                  'special_likes_count', 'comments_count', 'user',)
+                  'special_likes_count', 'comments_count', 'user', 'thumbnail')
 
     def get_content(self, obj):
         """

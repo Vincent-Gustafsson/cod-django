@@ -74,6 +74,3 @@ class ArticleSerializer(serializers.ModelSerializer):
                 article.tags.add(tag)
 
         return article
-
-
-

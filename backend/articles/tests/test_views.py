@@ -1,4 +1,5 @@
 import random
+import os
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -161,6 +162,39 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(Article.drafts.count(), 1)
         self.assertEqual(Article.drafts.get().user, self.user)
 
+    def test_create_article_with_thumbnail(self):
+        """ Create an article with a thumbnail. """
+        url = reverse('article-list')
+
+        thumbnail_fp = 'C:/dev/cod/backend/media/uploads/thumbnails/test_thumbnail.png'
+
+        with open(thumbnail_fp, 'rb') as thumbnail:
+            data = {
+                'title': 'Test title',
+                'content': 'This is the content',
+                'thumbnail': thumbnail
+            }
+
+            self.client.force_authenticate(self.user)
+            response = self.client.post(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(Article.objects.get(pk=response.json()['id']).thumbnail)
+
+    def test_create_article_without_thumbnail(self):
+        """ Create an article without a thumbnail. """
+        url = reverse('article-list')
+
+        data = {
+            'title': 'Test title',
+            'content': 'This is the content'
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(url, data, format='multipart')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_list_articles(self):
         url = reverse('article-list')
 
@@ -228,6 +262,22 @@ class ArticleViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def tearDown(self):
+        # All of this code may be unecessary, but it works.
+
+        directory = 'C:/dev/cod/backend/media/uploads/thumbnails'
+        preserved_files = ('test_thumbnail.png',)
+
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            is_file = (os.path.isfile(file_path) or os.path.islink(file_path))
+            try:
+                if is_file and filename not in preserved_files:
+                    os.unlink(file_path)
+
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 class ArticleSaveViewsTest(APITestCase):

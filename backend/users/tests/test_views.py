@@ -274,7 +274,7 @@ class UserViewsTest(APITestCase):
         original_avatar = self.users[0].avatar
 
         new_display_name = fake.first_name()
-        avatar_fp = 'C:/dev/cod/backend/media/uploads/avatars/r6.jpg'
+        avatar_fp = 'C:/dev/cod/backend/media/uploads/avatars/test_avatar.jpg'
 
         with open(avatar_fp, 'rb') as avatar:
             data = {
@@ -297,7 +297,7 @@ class UserViewsTest(APITestCase):
         # All of this code may be unecessary, but it works.
 
         directory = 'C:/dev/cod/backend/media/uploads/avatars'
-        preserved_files = ('r6.jpg', 'default_avatar.png',)
+        preserved_files = ('test_avatar.jpg', 'default_avatar.png',)
 
         for filename in os.listdir(directory):
             file_path = os.path.join(directory, filename)
