@@ -63,7 +63,7 @@ class UserRegistrationViewTest(APITestCase):
         }
 
     def test_create_valid_user(self):
-        """ Tests if user registration works. """
+        """ Registers a user. """
         url = reverse('rest_register')
 
         response = self.client.post(url, self.valid_user, format='json')
@@ -73,6 +73,7 @@ class UserRegistrationViewTest(APITestCase):
         self.assertEqual(response.data['key'], Token.objects.get().key)
 
     def test_username_valid(self):
+        """ Register with valid a username. """
         url = reverse('rest_register')
 
         response = self.client.post(url, self.valid_user, format='json')
@@ -80,6 +81,7 @@ class UserRegistrationViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_username_invalid(self):
+        """ Can't register with a name that's has special characters and so on. """
         url = reverse('rest_register')
 
         data = {
@@ -102,7 +104,7 @@ class UserRegistrationViewTest(APITestCase):
             data['username'] = base_username
 
     def test_password_validation_length(self):
-        """ Tests if the password length validation works. """
+        """ Can't register because the password must be at least 6 characters. """
         url = reverse('rest_register')
 
         response = self.client.post(url, self.short_password_user, format='json')
@@ -113,7 +115,7 @@ class UserRegistrationViewTest(APITestCase):
         )
 
     def test_password_validation_must_match(self):
-        """ Tests if the password matching validation works. """
+        """ Registration fails becuase the passwords don't match. """
         url = reverse('rest_register')
 
         response = self.client.post(url, self.non_matching_passwords_user, format='json')
@@ -122,7 +124,7 @@ class UserRegistrationViewTest(APITestCase):
         self.assertEqual(response.json()['password'], 'Passwords must match.')
 
     def test_unique_constraints(self):
-        """ Tests if the unique constraints on username and email works. """
+        """ The username and email must be unique. """
         url = reverse('rest_register')
 
         response = self.client.post(url, self.non_unique_user, format='json')
@@ -147,6 +149,7 @@ class AuthViewsTest(APITestCase):
         )
 
     def test_login_user(self):
+        """ Logs in user. """
         url = reverse('rest_login')
 
         user = User.objects.create_user(
@@ -168,6 +171,7 @@ class AuthViewsTest(APITestCase):
         self.assertEqual(response.json()['key'], token.key)
 
     def test_logout_user(self):
+        """ logs out user. """
         url = reverse('rest_logout')
 
         user = User.objects.create_user(
@@ -183,6 +187,7 @@ class AuthViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_user_details(self):
+        """ Get the user details. """
         url = reverse('rest_user_details')
 
         self.client.force_authenticate(self.details_user)
@@ -192,6 +197,7 @@ class AuthViewsTest(APITestCase):
         self.assertEqual(response.json()['id'], self.details_user.id)
 
     def test_update_user_details(self):
+        """ Updates the user details. """
         url = reverse('rest_user_details')
 
         updated_username = fake.first_name()
@@ -205,6 +211,7 @@ class AuthViewsTest(APITestCase):
         self.assertEqual(User.objects.get(pk=self.details_user.id).username, updated_username)
 
     def test_change_password(self):
+        """ Changes the users password. """
         url = reverse('rest_password_change')
 
         new_password = fake.password()
@@ -233,8 +240,7 @@ class UserViewsTest(APITestCase):
         self.users = User.objects.all()
 
     def test_list_users(self):
-        """ Tests if the user-list endpoint returns all the users """
-        # TODO Will have to add test cases for search params and stuff
+        """ Returns all users. """
         url = reverse('user-list')
 
         response = self.client.get(url, format='json')
@@ -246,7 +252,7 @@ class UserViewsTest(APITestCase):
             self.assertEqual(user.username, response.json()[i]['username'])
 
     def test_retrieve_user(self):
-        """ Tests if the user detail endpoint returns the right user """
+        """ Gets a single user and its details. """
         url = reverse('user-detail', kwargs={'slug': self.users[0].slug})
 
         response = self.client.get(url)
@@ -266,7 +272,7 @@ class UserViewsTest(APITestCase):
         self.assertFalse(User.objects.filter(pk=user.id).exists())
 
     def test_update_user_profile(self):
-        """ Tests if the user update profile endpoint works """
+        """ Updates a the user's profile. """
 
         url = reverse('user-profile-update')
 
@@ -294,8 +300,6 @@ class UserViewsTest(APITestCase):
         self.assertNotEqual(original_avatar, new_avatar)
 
     def tearDown(self):
-        # All of this code may be unecessary, but it works.
-
         directory = 'C:/dev/cod/backend/media/uploads/avatars'
         preserved_files = ('test_avatar.jpg', 'default_avatar.png',)
 
@@ -330,6 +334,7 @@ class FollowViewsTest(APITestCase):
         )
 
     def test_follow_user(self):
+        """ Follows a user. """
         url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
 
         self.client.force_authenticate(self.user)
@@ -343,6 +348,7 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(UserFollowing.objects.get().user_followed, self.user_2)
 
     def test_unfollow_user(self):
+        """ Unfollows a user. """
         self.follow_obj.save()
         url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
 
@@ -354,6 +360,7 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(UserFollowing.objects.count(), 0)
 
     def test_follow_self(self):
+        """ Throws and error because you can't follow yourself. """
         url = reverse('user-follow', kwargs={'slug': self.user.slug})
 
         self.client.force_authenticate(self.user)
@@ -363,6 +370,7 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'Can\'t follow yourself'})
 
     def test_unfollow_self(self):
+        """ Throws and error because you can't unfollow yourself. """
         url = reverse('user-unfollow', kwargs={'slug': self.user.slug})
 
         self.client.force_authenticate(self.user)
@@ -372,6 +380,7 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'Can\'t unfollow yourself'})
 
     def test_already_following(self):
+        """ Throws and error because you can't follow someone twice. """
         self.follow_obj.save()
         url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
 
@@ -384,6 +393,10 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(UserFollowing.objects.count(), 1)
 
     def test_already_not_following(self):
+        """
+        Throws and error because you can't unfollow
+        someone you haven't followed yet.
+        """
         url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
 
         self.client.force_authenticate(self.user)
@@ -394,7 +407,8 @@ class FollowViewsTest(APITestCase):
 
     def test_follow_invalid_user(self):
         """
-        Responds with 404 if the user does not exist (if the slug is invalid).
+        Responds with 404 because you can't
+        follow a user that does not exist.
         """
         url = reverse('user-follow', kwargs={'slug': 'does-not-exist'})
 
@@ -406,7 +420,8 @@ class FollowViewsTest(APITestCase):
 
     def test_unfollow_invalid_user(self):
         """
-        Responds with 404 if the user does not exist (if the slug is invalid).
+        Responds with 404 because you can't
+        unfollow a user that does not exist.
         """
         url = reverse('user-unfollow', kwargs={'slug': 'does-not-exist'})
 
@@ -417,9 +432,7 @@ class FollowViewsTest(APITestCase):
         self.assertEqual(response.json(), {'detail': 'Not found.'})
 
     def test_follow_unauthenticated(self):
-        """
-        Responds with 401 Unauthorized.
-        """
+        """ Responds with 401 Unauthorized because the user isn't logged in."""
         url = reverse('user-follow', kwargs={'slug': self.user_2.slug})
 
         response = self.client.post(url, format='json')
@@ -431,9 +444,7 @@ class FollowViewsTest(APITestCase):
         )
 
     def test_unfollow_unauthenticated(self):
-        """
-        Responds with 401 Unauthorized.
-        """
+        """ Responds with 401 Unauthorized because the user isn't logged in."""
         url = reverse('user-unfollow', kwargs={'slug': self.user_2.slug})
 
         response = self.client.delete(url, format='json')

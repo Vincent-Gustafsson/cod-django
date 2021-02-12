@@ -15,13 +15,19 @@ class UserModelTest(TestCase):
         )
 
     def test_create_user(self):
+        """ Creates a user. """
         self.assertTrue(isinstance(self.user, User))
         self.assertEqual(str(self.user), self.user.username)
 
     def test_user_default_display_name(self):
+        """ Creates a user and sets the display name to the username. """
         self.assertEqual(self.user.display_name, self.user.username)
 
     def test_user_change_display_name(self):
+        """ 
+        Changes the display name to a new one and
+        the username is no longer the display name.
+        """
         self.user.display_name = 'another_name'
         self.user.save()
         self.assertNotEqual(self.user.display_name, self.user.username)
@@ -51,6 +57,7 @@ class UserFollowingTest(TestCase):
         )
 
     def test_follow_user(self):
+        """ Follows a user. """
         following = UserFollowing.objects.create(
             user_follows=self.user,
             user_followed=self.user_2

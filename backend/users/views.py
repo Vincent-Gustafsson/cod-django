@@ -17,8 +17,11 @@ class UserListRetrieveViewSet(viewsets.GenericViewSet,
     lookup_field = 'slug'
 
     def get_queryset(self):
+        """
+        Filters the queryset by:
+            q - filters users by username and display name, icontains (case insensitve, contains)
+        """
         queryset = User.objects.all()
-        # q = query / search
         q = self.request.query_params.get('q', None)
 
         if q:

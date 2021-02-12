@@ -35,6 +35,7 @@ class ArticleTagViewsTest(APITestCase):
             self.tags.append(Tag.objects.create(name=name))
 
     def test_create_article_with_tags(self):
+        """ Creates an article with tags. """
         url = reverse('article-list')
 
         data = {
@@ -52,6 +53,7 @@ class ArticleTagViewsTest(APITestCase):
         self.assertEqual(article_obj.tags.count(), 3)
 
     def test_remove_one_tag_from_article(self):
+        """ Remove one tag from an article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {'tags': ['python', 'vue']}
@@ -65,6 +67,7 @@ class ArticleTagViewsTest(APITestCase):
         self.assertEqual(self.article.tags.count(), 2)
 
     def test_maximum_tags_validation_on_create(self):
+        """ Throws an error when trying to add more than 5 tags on creation. """
         url = reverse('article-list')
 
         data = {
@@ -80,6 +83,7 @@ class ArticleTagViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You can\'t assign more than five tags'})
 
     def test_maximum_tags_validation_on_put(self):
+        """ Throws an error when trying to add more than 5 tags on update. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {'tags': ['javascript', 'python', 'vue', 'frontend', 'backend', 'docker']}
@@ -93,6 +97,7 @@ class ArticleTagViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You can\'t assign more than five tags'})
 
     def test_article_removed_from_tag_relationship(self):
+        """ Articles gets removed from tag correctly when deleting. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.article.tags.add(1)
@@ -125,6 +130,7 @@ class ArticleViewsTest(APITestCase):
         )
 
     def test_create_article_authorized(self):
+        """ Creates an article. """
         url = reverse('article-list')
 
         data = {
@@ -140,6 +146,10 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(Article.objects.get(pk=2).user, self.user)
 
     def test_create_article_unauthorized(self):
+        """
+        can't create an article because
+        the user isn't logged in.
+        """
         url = reverse('article-list')
 
         response = self.client.post(url, format='json')
@@ -147,6 +157,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_article_draft(self):
+        """ Creates an article as a draft. """
         url = reverse('article-list')
 
         data = {
@@ -163,7 +174,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(Article.drafts.get().user, self.user)
 
     def test_create_article_with_thumbnail(self):
-        """ Create an article with a thumbnail. """
+        """ Creates an article with a thumbnail. """
         url = reverse('article-list')
 
         thumbnail_fp = 'C:/dev/cod/backend/media/uploads/thumbnails/test_thumbnail.png'
@@ -196,6 +207,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_list_articles(self):
+        """ Gets all articles that aren't drafts. """
         url = reverse('article-list')
 
         response = self.client.get(url, format='json')
@@ -203,6 +215,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_article_saved_count(self):
+        """ Displays the total amount of saves the article has. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
@@ -213,6 +226,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.json()['saved_count'], self.article.saves.count())
 
     def test_get_detail_article(self):
+        """ Gets the full article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         response = self.client.get(url, format='json')
@@ -220,6 +234,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_own_article(self):
+        """ Can update the user's own article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {
@@ -235,6 +250,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(Article.objects.get(pk=self.article.id).content, data['content'])
 
     def test_update_other_article(self):
+        """ Can't update someone else's article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         data = {
@@ -248,6 +264,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_own_article(self):
+        """ Can delete the user's own article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
@@ -256,6 +273,7 @@ class ArticleViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_other_article(self):
+        """ Can't delete someone else's article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user_2)
@@ -301,6 +319,7 @@ class ArticleSaveViewsTest(APITestCase):
         )
 
     def test_save_article(self):
+        """ The user can save an article. """
         url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
@@ -310,6 +329,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'Saved article'})
 
     def test_save_own_article(self):
+        """ The user can't save its own article. """
         url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
@@ -319,6 +339,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You can\'t save your own article'})
 
     def test_save_twice(self):
+        """ Can save an article twice. """
         url = reverse('article-save', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
@@ -331,6 +352,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(response.json(), {'details': 'You have already saved this article'})
 
     def test_unsave(self):
+        """ Can unsave an article. """
         url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
@@ -343,6 +365,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(self.user.saved_articles.count(), 0)
 
     def test_unsave_twice(self):
+        """ Can't unsave an article twice. """
         url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.user.saved_articles.add(self.article)
@@ -359,6 +382,7 @@ class ArticleSaveViewsTest(APITestCase):
         self.assertEqual(self.user.saved_articles.count(), 0)
 
     def test_unsave_own_article(self):
+        """ The user can't unsave its own article. """
         url = reverse('article-unsave', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
@@ -417,6 +441,7 @@ class ArticleLikeViewsTest(APITestCase):
         )
 
     def test_like_article(self):
+        """ Likes an article. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
@@ -430,13 +455,15 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().article, self.article)
 
     def test_cannot_like_unauthenticated(self):
+        """ Can't like a article if not logged in. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_super_like_article(self):
+    def test_special_like_article(self):
+        """ Special likes an article. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
@@ -452,6 +479,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().article, self.article)
 
     def test_article_cannot_be_found(self):
+        """ Can't like an article that doesn't exist. """
         url = reverse('article-like', kwargs={'slug': 'invalid_slug'})
 
         self.client.force_authenticate(self.user)
@@ -460,6 +488,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_cannot_like(self):
+        """ Can't like your own article. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.owner)
@@ -471,6 +500,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
 
     def test_owner_cannot_special_like(self):
+        """ Can't special like your own article. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
@@ -484,6 +514,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
 
     def test_cannot_like_twice(self):
+        """ Can't like an article twice. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         self.client.force_authenticate(self.user)
@@ -499,6 +530,7 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.get().user, self.user)
 
     def test_cannot_special_like_twice(self):
+        """ Can't special like an article twice. """
         url = reverse('article-like', kwargs={'slug': self.article.slug})
 
         data = {'special_like': True}
@@ -515,7 +547,8 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
         self.assertEqual(ArticleLike.objects.get().user, self.user)
 
-    def test_delete_like(self):
+    def test_unlike(self):
+        """ Unlikes an article. """
         url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.like.save()
 
@@ -525,7 +558,8 @@ class ArticleLikeViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 0)
 
-    def test_cannot_delete_like_unauthenticated(self):
+    def test_cannot_unlike_unauthenticated(self):
+        """ Can't unlikes an article because the user isn't logged in. """
         url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.like.save()
 
@@ -533,7 +567,8 @@ class ArticleLikeViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_delete_special_like(self):
+    def test_unlike_special_like(self):
+        """ Unlikes a special like. """
         url = reverse('article-unlike', kwargs={'slug': self.article.slug})
         self.special_like.save()
 
@@ -544,34 +579,6 @@ class ArticleLikeViewsTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 0)
-
-    def test_delete_like_from_another_post(self):
-        url = reverse('article-unlike', kwargs={'slug': self.article_2.slug})
-        self.like.save()
-        self.like_2.save()
-
-        self.client.force_authenticate(self.user)
-        response = self.client.delete(url, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-        self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
-        self.assertEqual(self.article_2.likes.count(), 0)
-
-    def test_delete_special_like_from_another_post(self):
-        url = reverse('article-unlike', kwargs={'slug': self.article_2.slug})
-        self.special_like.save()
-        self.special_like_2.save()
-
-        data = {'special_like': True}
-
-        self.client.force_authenticate(self.user)
-        response = self.client.delete(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-        self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
-        self.assertEqual(self.article_2.likes.count(), 0)
 
 
 class CommentViewsTest(APITestCase):
@@ -601,6 +608,7 @@ class CommentViewsTest(APITestCase):
         )
 
     def test_create_comment_authorized(self):
+        """ User can comment because the user is logged in. """
         url = reverse('comment-list')
 
         data = {
@@ -619,14 +627,15 @@ class CommentViewsTest(APITestCase):
         self.assertEqual(self.article.comments.get().parent, None)
 
     def test_create_comment_unauthorized(self):
+        """ User can't comment because the user isn't logged in. """
         url = reverse('comment-list')
 
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # Perhaps this should be bundled with the Article tests.
     def test_list_article_comments(self):
+        """ Gets all comments on an article. """
         url = reverse('article-detail', kwargs={'slug': self.article.slug})
 
         for _ in range(2):
@@ -641,6 +650,7 @@ class CommentViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_own_comment(self):
+        """ User can delete its own comment. """
         self.comment.save()
         url = reverse('comment-detail', kwargs={'pk': self.comment.id})
 
@@ -651,6 +661,7 @@ class CommentViewsTest(APITestCase):
         self.assertEqual(self.article.comments.get().body, 'deleted')
 
     def test_delete_other_comment(self):
+        """ User can't delete someone else's comment. """
         self.comment.save()
         url = reverse('comment-detail', kwargs={'pk': self.comment.id})
 
@@ -660,6 +671,7 @@ class CommentViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_cannot_create_child_with_another_article_id(self):
+        """ Can't reply to a comment on another article, from another article. """
         url = reverse('comment-list')
 
         article_2 = Article.objects.create(
@@ -691,6 +703,7 @@ class CommentViewsTest(APITestCase):
         )
 
     def test_create_child_comment(self):
+        """ Creates a reply (child comment). """
         self.comment.save()
         url = reverse('comment-list')
 
@@ -735,6 +748,7 @@ class CommentVoteViewsTest(APITestCase):
         )
 
     def test_upvote_comment(self):
+        """ Upvotes a comment. """
         url = reverse('comment-vote', kwargs={'pk': self.comment.id})
 
         self.client.force_authenticate(self.user)
@@ -747,6 +761,7 @@ class CommentVoteViewsTest(APITestCase):
         self.assertEqual(self.comment.score, 1)
 
     def test_downvote_comment(self):
+        """ Downvotes a comment. """
         url = reverse('comment-vote', kwargs={'pk': self.comment.id})
 
         data = {'downvote': True}
@@ -761,6 +776,7 @@ class CommentVoteViewsTest(APITestCase):
         self.assertEqual(self.comment.score, -1)
 
     def test_delete_comment_vote(self):
+        """ Unvotes a comment. """
         url = reverse('comment-vote-delete', kwargs={'pk': self.comment.id})
         self.comment_vote.save()
 
@@ -774,6 +790,7 @@ class CommentVoteViewsTest(APITestCase):
         self.assertEqual(self.comment.score, 0)
 
     def test_comment_score(self):
+        """ Get a comments total score (upvotes - downvotes). """
         url = reverse('comment-detail', kwargs={'pk': self.comment.id})
 
         for _ in range(5):
@@ -794,7 +811,7 @@ class CommentVoteViewsTest(APITestCase):
         self.assertEqual(response.json()['score'], upvote_amount - downvote_amount)
 
 
-class FollowViewsTest(APITestCase):
+class FollowTagViewsTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username=fake.first_name(),

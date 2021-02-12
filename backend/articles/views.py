@@ -22,6 +22,15 @@ class ArticleViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
     def get_queryset(self):
+        """
+        Filters the queryset by:
+            q - title, icontains (case insensitve, contains)\n
+            tags - tags, filters by tags, can filter by multiple tags,
+            e.g. (\n
+                localhost:8000/api/articles?tags=python&tags=backend\n
+                Will return articles that has the tags 'python' and/or 'backend'.
+            )
+        """
         queryset = Article.objects.all()
 
         q = self.request.query_params.get('q', None)
@@ -280,6 +289,11 @@ class ArticleFeedView(generics.ListAPIView):
     pagination_class = FeedPagination
 
     def get_queryset(self):
+        """
+        Filters the queryset by:
+            gets all the articles from followed users and followed article.\n
+            Ordered by newest - oldest.
+        """
         user = self.request.user
 
         qs = Article.objects.all().order_by('id')

@@ -37,6 +37,7 @@ class ReportModelTest(TestCase):
         )
 
     def test_report_article(self):
+        """ Reports an article. """
         article_report = Report.objects.create(
             article=self.article,
             reported_by=self.reporting_user
@@ -47,6 +48,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(self.article.reports_count, 1)
 
     def test_report_comment(self):
+        """ Reports a comment. """
         comment_report = Report.objects.create(
             comment=self.comment,
             reported_by=self.reporting_user
@@ -57,6 +59,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(self.comment.reports_count, 1)
 
     def test_report_user(self):
+        """ Reports a user. """
         user_report = Report.objects.create(
             user=self.user,
             reported_by=self.reporting_user
@@ -67,6 +70,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(self.user.reports_count, 1)
 
     def test_report_multiple_objects(self):
+        """ Only one type of object can be reported per report. """
         report_obj = Report(
             article=self.article,
             comment=self.comment,

@@ -51,9 +51,7 @@ class ReportViewsTest(APITestCase):
         )
 
     def test_report_article(self):
-        """
-        Reports the given article.
-        """
+        """ Reports the given article. """
         url = reverse('report-list')
 
         data = {
@@ -68,9 +66,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.count(), 1)
 
     def test_report_comment(self):
-        """
-        Reports the given comment.
-        """
+        """ Reports the given comment. """
         url = reverse('report-list')
 
         data = {
@@ -85,9 +81,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.count(), 1)
 
     def test_report_user(self):
-        """
-        Reports the given user.
-        """
+        """ Reports the given user. """
         url = reverse('report-list')
 
         data = {
@@ -102,9 +96,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.count(), 1)
 
     def test_report_own_article(self):
-        """
-        Disallows reporting your own article.
-        """
+        """ Disallows reporting your own article. """
         url = reverse('report-list')
 
         data = {
@@ -121,9 +113,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.count(), 0)
 
     def test_report_own_comment(self):
-        """
-        Disallows reporting your own comment.
-        """
+        """ Disallows reporting your own comment. """
         url = reverse('report-list')
 
         data = {
@@ -140,9 +130,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.count(), 0)
 
     def test_report_yourself(self):
-        """
-        Disallows reporting yourself.
-        """
+        """ Disallows reporting yourself. """
         url = reverse('report-list')
 
         data = {
@@ -183,9 +171,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_mark_report_moderated_authorized(self):
-        """
-        Marks report as moderated.
-        """
+        """ Marks report as moderated. """
         self.report.save()
         url = reverse('report-detail', kwargs={'pk': self.report.id})
 
@@ -197,9 +183,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(Report.objects.filter(moderated=True).count(), 1)
 
     def test_mark_report_moderated_unauthorized(self):
-        """
-        Denies access to marking as moderated if not a moderator.
-        """
+        """ Denies access to marking as moderated if not a moderator. """
         self.report.save()
         url = reverse('report-detail', kwargs={'pk': self.report.id})
 
@@ -209,9 +193,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_moderated_reports(self):
-        """
-        Filter out unmoderated reports.
-        """
+        """ Filter out unmoderated reports. """
         url = reverse('report-list') + '?moderated=True'
 
         for i in range(3):
@@ -229,9 +211,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(len(response.json()), 1)
 
     def test_list_unmoderated_reports(self):
-        """
-        Filter out moderated reports.
-        """
+        """ Filter out moderated reports. """
         url = reverse('report-list')
 
         for i in range(3):
@@ -249,9 +229,7 @@ class ReportViewsTest(APITestCase):
         self.assertEqual(len(response.json()), 2)
 
     def test_cant_set_moderated_on_creation(self):
-        """
-        Can't set the moderated field to True when creating a report.
-        """
+        """ Can't set the moderated field to True when creating a report. """
         url = reverse('report-list')
 
         data = {
