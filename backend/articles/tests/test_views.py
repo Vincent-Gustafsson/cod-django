@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 import faker
 
 from ..models import Tag, Article, ArticleLike, Comment, CommentVote
+from ..serializers.article_serializers import ArticleSerializer
 
 
 fake = faker.Faker('en')
@@ -58,7 +59,7 @@ class ArticleTagViewsTest(APITestCase):
 
         data = {'tags': ['python', 'vue']}
 
-        self.article.tags.set((2, 3, 6))
+        self.article.tags.set((2, 3, 6,))
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, data, format='json')
@@ -123,10 +124,23 @@ class ArticleViewsTest(APITestCase):
             password=fake.password()
         )
 
+        self.draft_user = User.objects.create_user(
+            username='draft_user',
+            email='draft_test@gmail.com',
+            password='12345'
+        )
+
         self.article = Article.objects.create(
             title='Test title',
             content='This is the content',
             user=self.user
+        )
+
+        self.draft_article = Article.objects.create(
+            title='Test draft title',
+            content='Content',
+            draft=True,
+            user=self.draft_user
         )
 
     def test_create_article_authorized(self):
@@ -141,9 +155,11 @@ class ArticleViewsTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.post(url, data, format='json')
 
+        article_id = response.json()['id']
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.objects.get(pk=2).user, self.user)
+        self.assertEqual(Article.objects.get(pk=article_id).user, self.user)
 
     def test_create_article_unauthorized(self):
         """
@@ -169,9 +185,10 @@ class ArticleViewsTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.post(url, data, format='json')
 
+        article_id = response.json()['id']
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Article.drafts.count(), 1)
-        self.assertEqual(Article.drafts.get().user, self.user)
+        self.assertEqual(Article.drafts.get(pk=article_id).user, self.user)
 
     def test_create_article_with_thumbnail(self):
         """ Creates an article with a thumbnail. """
@@ -280,6 +297,64 @@ class ArticleViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_draft_details_authorized(self):
+        """ Returns the draft article becuase the user is the owner. """
+        url = reverse('article-detail', kwargs={'slug': self.draft_article.slug})
+
+        self.client.force_authenticate(self.draft_user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['title'], self.draft_article.title)
+
+    def test_get_draft_details_unauthorized(self):
+        """ Doesn't return the draft article becuase the user isn't the owner. """
+        url = reverse('article-detail', kwargs={'slug': self.draft_article.slug})
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_list_drafts_authorized(self):
+        """ Retrieves all the user's drafts """
+        url = reverse('article-drafts')
+
+        self.client.force_authenticate(self.draft_user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+    def test_list_drafts_unauthenticated(self):
+        """ Responds with 401. """
+        url = reverse('article-drafts')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_only_own_drafts(self):
+        """ Retrieves all the user's drafts. (ensures that it's only theirs) """
+        url = reverse('article-drafts')
+
+        for _ in range(3):
+            Article.objects.create(
+                title='test draft title',
+                content='test content',
+                draft=True,
+                user=self.user
+            )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            ArticleSerializer(Article.drafts.filter(user=self.user), many=True).data
+        )
 
     def tearDown(self):
         # All of this code may be unecessary, but it works.

@@ -34,13 +34,63 @@ class ArticleViewSet(viewsets.ModelViewSet):
         queryset = Article.objects.all()
 
         title = self.request.query_params.get('title', '')
-        tags = self.request.query_params.getlist('tag', [])
+        tags = self.request.query_params.getlist('tag', None)
 
-        queryset = queryset.filter(
-            Q(title__icontains=title) | Q(tags__slug__in=tags)
-        )
+        if title and tags:
+            queryset = queryset.filter(
+                Q(title__icontains=title) | Q(tags__slug__in=tags)
+            )
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        if tags:
+            queryset = queryset.filter(tags__slug__in=tags)
 
         return queryset
+
+    def get_object(self):
+        """
+        When the user tries to access a article,
+        check if the article is a draft and if the owner is the requesting user. If not,
+        keep going and do a normal get_object().
+        """
+        slug = self.kwargs.get('slug', None)
+        user = self.request.user
+
+        article = None
+
+        try:
+            article = Article.drafts.filter(user=user).get(slug=slug)
+
+        except Exception:
+            article = None
+
+        if article:
+            self.check_object_permissions(self.request, article)
+            return article
+
+        try:
+            article = Article.objects.get(slug=slug)
+
+        except Article.DoesNotExist:
+            raise Http404
+
+        self.check_object_permissions(self.request, article)
+        return article
+
+
+class DraftArticlesView(generics.ListAPIView):
+    """ Returns all of the users draft articles. """
+    queryset = Article.drafts.all()
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request):
+        """ Returns all of the users draft articles. """
+        queryset = self.queryset.filter(user=request.user)
+        serializer = ArticleSerializer(queryset, many=True)
+
+        return Response(serializer.data)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

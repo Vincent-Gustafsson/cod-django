@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from autoslug import AutoSlugField
 
-from .managers import ArticleManager, ArticleDraftsManager
+from .managers import ArticleManager, ArticleDraftsManager, ArticleSlugsManager
 
 
 class Tag(models.Model):
@@ -25,7 +25,14 @@ class Article(models.Model):
     draft = models.BooleanField(default=False)
     thumbnail = models.ImageField(upload_to='uploads/thumbnails', blank=True, null=True)
 
-    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='title')
+    _all_articles = ArticleSlugsManager()
+    slug = AutoSlugField(
+        null=True,
+        default=None,
+        unique=True,
+        populate_from='title',
+        manager=_all_articles
+    )
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')
     tags = models.ManyToManyField('Tag', related_name='articles', blank=True)
@@ -33,7 +40,6 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Filters out drafts
     objects = ArticleManager()
     drafts = ArticleDraftsManager()
 

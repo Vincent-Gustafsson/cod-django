@@ -5,7 +5,7 @@ from rest_framework import routers
 from .views import (ArticleViewSet, CommentViewSet, LikeArticleView,
                     UnlikeArticleView, UpvoteCommentView, DeleteCommentVoteView,
                     SaveArticleView, UnsaveArticleView, ArticleFeedView, FollowTagView,
-                    UnfollowTagView)
+                    UnfollowTagView, DraftArticlesView)
 
 
 router = routers.SimpleRouter()
@@ -15,7 +15,9 @@ router.register('articles', ArticleViewSet, basename='article')
 router.register('comments', CommentViewSet)
 
 urlpatterns = [
-    path('feed', ArticleFeedView.as_view(), name='article-feed'),
+    path('articles/drafts/', DraftArticlesView.as_view(), name='article-drafts'),
+
+    path('feed/', ArticleFeedView.as_view(), name='article-feed'),
 
     path('tags/<str:slug>/follow', FollowTagView.as_view(), name='tag-follow'),
     path('tags/<str:slug>/unfollow', UnfollowTagView.as_view(), name='tag-unfollow'),
