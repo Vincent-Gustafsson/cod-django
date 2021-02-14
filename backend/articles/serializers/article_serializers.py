@@ -15,7 +15,7 @@ class RecursiveCommentSerializer(serializers.Serializer):
         return serializer.data
 
 
-class CommentUserSerializer(serializers.ModelSerializer):
+class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('display_name', 'slug', 'avatar',)
@@ -24,7 +24,7 @@ class CommentUserSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     children = RecursiveCommentSerializer(many=True, read_only=True)
-    user = CommentUserSerializer(read_only=True)
+    user = UserInfoSerializer(read_only=True)
 
     class Meta:
         model = Comment
@@ -48,7 +48,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-    tags = serializers.SlugRelatedField(many=True, required=False, slug_field='slug', queryset=Tag.objects.all())
+    user = UserInfoSerializer(read_only=True)
+    tags = serializers.SlugRelatedField(
+        many=True,
+        required=False,
+        slug_field='slug',
+        queryset=Tag.objects.all()
+    )
 
     comments = CommentSerializer(many=True, read_only=True)
 

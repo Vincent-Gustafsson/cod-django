@@ -24,8 +24,8 @@ class ArticleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Filters the queryset by:
-            q - title, icontains (case insensitve, contains)\n
-            tags - tags, filters by tags, can filter by multiple tags,
+            title - title, icontains (case insensitve, contains)\n
+            tag - tags, filters by tags, can filter by multiple tags,
             e.g. (\n
                 localhost:8000/api/articles?tags=python&tags=backend\n
                 Will return articles that has the tags 'python' and/or 'backend'.
@@ -33,14 +33,12 @@ class ArticleViewSet(viewsets.ModelViewSet):
         """
         queryset = Article.objects.all()
 
-        q = self.request.query_params.get('q', None)
-        tags = self.request.query_params.getlist('tag', None)
+        title = self.request.query_params.get('title', '')
+        tags = self.request.query_params.getlist('tag', [])
 
-        if q or tags:
-            queryset = queryset.filter(
-                Q(title__icontains=q) | Q(tags__slug__in=tags)
-            )
-            return queryset
+        queryset = queryset.filter(
+            Q(title__icontains=title) | Q(tags__slug__in=tags)
+        )
 
         return queryset
 
