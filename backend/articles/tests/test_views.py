@@ -730,7 +730,7 @@ class CommentViewsTest(APITestCase):
         url = reverse('comment-detail', kwargs={'pk': self.comment.id})
 
         self.client.force_authenticate(self.user)
-        response = self.client.delete(url, format='json')
+        response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(self.article.comments.get().body, 'deleted')

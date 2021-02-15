@@ -194,7 +194,8 @@ class LikeArticleView(views.APIView):
 
         if not is_owner:
             if not user_special_liked:
-                if request.data.get('special_like'):
+                special_like = request.data.get('special_like', False)
+                if special_like:
                     ArticleLike.objects.create(
                         user=user,
                         article=article,

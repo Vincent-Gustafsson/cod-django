@@ -1,7 +1,9 @@
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .models import User
+from notifications.models import Notification
+
+from .models import User, UserFollowing
 
 
 # TODO Should all of this actually just be in the create method?
@@ -24,3 +26,13 @@ def set_display_name(sender, instance, **kwargs):
         default_avatar_path = User._meta.get_field('avatar').get_default()
         instance.avatar = default_avatar_path
         instance.save()
+
+
+@receiver(post_save, sender=UserFollowing)
+def send_follow_notification(sender, instance, **kwargs):
+    Notification.objects.create(
+        sender=instance.user_follows,
+        receiver=instance.user_followed,
+        action=Notification.FOLLOW,
+        user=instance.user_followed
+    )
