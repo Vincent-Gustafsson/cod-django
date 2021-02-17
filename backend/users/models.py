@@ -43,6 +43,9 @@ class User(AbstractBaseUser):
     def reports_count(self):
         return self.reports.count()
 
+    def get_all_notifications(self):
+        return self.notifications.all()
+
     def get_absolute_url(self):
         return reverse('user-detail', kwargs={'slug': self.slug})
 

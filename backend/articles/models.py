@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from autoslug import AutoSlugField
 
@@ -68,6 +69,9 @@ class Article(models.Model):
     def reports_count(self):
         return self.reports.count()
 
+    def get_absolute_url(self):
+        return reverse('article-detail', kwargs={'slug': self.slug})
+
 
 class ArticleLike(models.Model):
     special_like = models.BooleanField(default=False)
@@ -126,6 +130,9 @@ class Comment(models.Model):
     @property
     def reports_count(self):
         return self.reports.count()
+
+    def get_absolute_url(self):
+        return reverse('comment-detail', kwargs={'id': self.id})
 
 
 class CommentVote(models.Model):

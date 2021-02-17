@@ -32,7 +32,6 @@ def set_display_name(sender, instance, **kwargs):
 def send_follow_notification(sender, instance, **kwargs):
     Notification.objects.create(
         sender=instance.user_follows,
-        receiver=instance.user_followed,
         action=Notification.FOLLOW,
         user=instance.user_followed
     )

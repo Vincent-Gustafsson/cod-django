@@ -25,7 +25,7 @@ class Notification(models.Model):
     action = models.IntegerField(choices=ACTIONS)    
 
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notice_from_user")
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notice_to_user")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
 
     article = models.ForeignKey(
         'articles.Article',
@@ -49,7 +49,7 @@ class Notification(models.Model):
         null=True
     )
 
-    preview_text = models.CharField(max_length=100, null=True)
+    preview_text = models.CharField(max_length=100, blank=True, null=True)
     seen = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,5 +100,19 @@ class Notification(models.Model):
         return self.__generate_details_text()
 
     def save(self, *args, **kwargs):
-        self.text_preview = self.__generate_details_text()
+        self.preview_text = self.__generate_details_text()
+
+        if self.article:
+            self.receiver = self.article.user
+
+        elif self.comment:
+            if self.action == self.COMMENT:
+                self.receiver = self.comment.article.user
+
+            elif self.action == self.REPLY:
+                self.receiver = self.comment.parent.user
+
+        elif self.user:
+            self.receiver = self.user
+
         super(Notification, self).save(*args, **kwargs)

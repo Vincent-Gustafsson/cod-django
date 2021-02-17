@@ -40,17 +40,15 @@ def send_like_notification(sender, instance, **kwargs):
 def send_comment_notification(sender, instance, **kwargs):
     # If the comment isn't deleted.
     if instance.user:
-        Notification.objects.create(
-            sender=instance.user,
-            receiver=instance.article.user,
-            action=Notification.COMMENT,
-            comment=instance
-        )
-
         if instance.parent:
             Notification.objects.create(
                 sender=instance.user,
-                receiver=instance.parent.user,
                 action=Notification.REPLY,
                 comment=instance
             )
+
+        Notification.objects.create(
+            sender=instance.user,
+            action=Notification.COMMENT,
+            comment=instance
+        )
