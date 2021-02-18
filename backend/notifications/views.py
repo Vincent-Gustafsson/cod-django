@@ -13,7 +13,13 @@ class ListNotificationsView(generics.ListAPIView):
     pagination_class = NotificationsPagination
 
     def get_queryset(self):
-        return self.request.user.get_all_notifications().order_by('seen')
+        """
+        Get all the user's notifications,
+        order them by newest to oldest & seen (False first).
+        The seen articles and the not seen articles will be
+        ordered seperatly by newest to oldest.
+        """
+        return self.request.user.get_all_notifications().order_by('seen', '-created_at')
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())

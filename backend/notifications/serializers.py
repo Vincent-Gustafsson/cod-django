@@ -9,7 +9,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id', 'sender_url', 'object_url', 'preview_text', 'seen',)
+        fields = ('id', 'sender_url', 'object_url', 'preview_text', 'seen', 'created_at')
 
     def get_object_url(self, obj):
         if obj.article:
