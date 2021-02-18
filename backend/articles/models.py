@@ -132,7 +132,7 @@ class Comment(models.Model):
         return self.reports.count()
 
     def get_absolute_url(self):
-        return reverse('comment-detail', kwargs={'id': self.id})
+        return reverse('comment-detail', kwargs={'pk': self.id})
 
 
 class CommentVote(models.Model):

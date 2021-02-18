@@ -46,12 +46,10 @@ class MarkAllNotifications(views.APIView):
 
 class MarkNotification(views.APIView):
     """ Marks the notification as seen """
-    def post(self, request):
-        notification_id = request.data.get('id', None)
-
-        if notification_id:
+    def post(self, request, pk):
+        if pk:
             try:
-                notification = request.user.get_all_notifications().get(pk=notification_id)
+                notification = request.user.get_all_notifications().get(pk=pk)
                 notification.seen = True
                 notification.save()
 

@@ -52,7 +52,7 @@ class NotificationModelTest(TestCase):
 
         self.assertIsInstance(like_notification, Notification)
         self.assertEqual(
-            like_notification.text_preview,
+            like_notification.preview_text,
             f'{like_notification.sender} liked {like_notification.article.title}'
         )
 
@@ -66,7 +66,7 @@ class NotificationModelTest(TestCase):
 
         self.assertIsInstance(special_like_notification, Notification)
         self.assertEqual(
-            special_like_notification.text_preview,
+            special_like_notification.preview_text,
             f'{special_like_notification.sender} Special liked {special_like_notification.article.title}'
         )
 
@@ -80,7 +80,7 @@ class NotificationModelTest(TestCase):
 
         self.assertIsInstance(comment_notification, Notification)
         self.assertEqual(
-            comment_notification.text_preview,
+            comment_notification.preview_text,
             f'{comment_notification.sender} commented on {comment_notification.comment.article.title}'
         )
 
@@ -94,7 +94,7 @@ class NotificationModelTest(TestCase):
 
         self.assertIsInstance(reply_notification, Notification)
         self.assertEqual(
-            reply_notification.text_preview,
+            reply_notification.preview_text,
             f'{reply_notification.sender} replied to {reply_notification.comment.body[:20]}...'
         )
 
@@ -108,6 +108,6 @@ class NotificationModelTest(TestCase):
 
         self.assertIsInstance(follow_notification, Notification)
         self.assertEqual(
-            follow_notification.text_preview,
+            follow_notification.preview_text,
             f'{follow_notification.sender} is now following you'
         )
