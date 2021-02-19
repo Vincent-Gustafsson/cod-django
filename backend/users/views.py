@@ -5,7 +5,7 @@ from rest_framework import status, viewsets, mixins, generics, exceptions, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import User, UserFollowing
+from .models import User
 from .serializers import UserSerializer, UserProfileSerializer
 
 
@@ -66,17 +66,11 @@ class FollowUserView(views.APIView):
         user = request.user
         user_to_follow = get_object_or_404(User, slug=slug)
 
-        is_self = user == user_to_follow
-
-        already_following = UserFollowing.objects.filter(user_follows=user)
+        is_self = (user == user_to_follow)
 
         if not is_self:
-            if not already_following:
-                UserFollowing.objects.create(
-                    user_follows=user,
-                    user_followed=user_to_follow
-                )
-
+            if not user.is_already_following(user_to_follow):
+                user.follow(user_to_follow)
                 return Response(
                     {'details': 'follow successful'},
                     status=status.HTTP_201_CREATED
@@ -103,14 +97,10 @@ class UnfollowUserView(views.APIView):
         user = request.user
         user_to_unfollow = get_object_or_404(User, slug=slug)
 
-        following_obj = UserFollowing.objects.filter(user_followed=user_to_unfollow)
-
-        is_self = user == user_to_unfollow
+        is_self = (user == user_to_unfollow)
 
         if not is_self:
-            if following_obj:
-                following_obj.delete()
-
+            if user.unfollow(user_to_unfollow):
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
             else:
