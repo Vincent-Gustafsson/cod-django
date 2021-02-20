@@ -1,10 +1,9 @@
 from rest_framework import permissions
 
 
-# TODO Change name to IsOwn or something similar
-class IsOwnArticle(permissions.BasePermission):
+class IsOwner(permissions.BasePermission):
     """
-    Object-level permission to only allow updating own article.
+    Object-level permission to only allow updating if is owner.
     """
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,

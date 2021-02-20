@@ -28,8 +28,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        # TODO parent, article fields may be unneeded
-        fields = ('id', 'body', 'user', 'article', 'score', 'parent', 'children', 'created_at',)
+        fields = ('id', 'body', 'user', 'article', 'parent', 'score', 'children', 'created_at',)
         read_only_fields = ('user',)
 
     def validate(self, data):

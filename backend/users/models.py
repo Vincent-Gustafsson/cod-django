@@ -56,6 +56,26 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.username
 
+    def save(self, *args, **kwargs):
+        # If display_name is None set display_name to the username
+        # This is used to set the display_name to the username when the account is created.
+        # Display name will prbably be set by the user when he / she updates their profile.
+        if self.display_name is None:
+            self.display_name = self.username
+            self.save()
+
+        # Gets the default value of the avatar ImageField.
+        # In this case:
+        #   ImageField(upload_to='uploads/avatars', default='uploads/avatars/default_avatar.png')
+        #
+        # default_avatar_path will be equal to 'uploads/avatars/default_avatar.png'
+        if self.avatar is None:
+            default_avatar_path = User._meta.get_field('avatar').get_default()
+            self.avatar = default_avatar_path
+            self.save()
+
+        super(User, self).save(*args, **kwargs)
+
     @property
     def reports_count(self):
         return self.reports.count()

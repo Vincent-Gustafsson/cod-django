@@ -98,7 +98,7 @@ class UserRegistrationViewTest(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
                 response.json()['username'],
-                ['The username may only contain A-Z, a-z, 0-9 and _']
+                ['The username may only contain alphanumeric characters and _']
             )
 
             data['username'] = base_username

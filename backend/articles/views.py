@@ -11,14 +11,14 @@ from .serializers.article_serializers import ArticleSerializer, CommentSerialize
 from .serializers.feed_serializers import (ArticleFeedSerializer,
                                            FollowedTagsSerializer,
                                            FollowedUsersSerializer)
-from .permissions import IsOwnArticle
+from .permissions import IsOwner
 from .pagination import FeedPagination
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """ Handles creation, updating & deletion of articles. """
     serializer_class = ArticleSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner,)
     lookup_field = 'slug'
 
     def get_queryset(self):
@@ -97,7 +97,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """ Handles creation, updating & deletion of comments. """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnArticle,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwner,)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -245,8 +245,6 @@ class UnlikeArticleView(views.APIView):
         user = request.user
         article = get_object_or_404(Article, slug=slug)
 
-        is_owner = article.user.id == request.user.id
-
         user_liked = ArticleLike.objects.filter(article=article,
                                                 user=user,
                                                 special_like=False)
@@ -255,28 +253,20 @@ class UnlikeArticleView(views.APIView):
                                                         user=user,
                                                         special_like=True)
 
-        # TODO Not sure if the is_owner check is needed. But I'll save it just in case.
-        # TODO Maybe I don't need to check for special/normal lieks here.
-        if not is_owner:
-            if user_special_liked:
-                if request.data.get('special_like'):
-                    user_special_liked.delete()
-                    return Response(status=status.HTTP_204_NO_CONTENT)
-
-            if user_liked:
-                user_liked.delete()
+        if user_special_liked:
+            if request.data.get('special_like'):
+                user_special_liked.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
-            else:
-                return Response(
-                    {'details': 'Can\'t unlike without liking.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if user_liked:
+            user_liked.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response(
-            {'details': 'Can\'t like your own post.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
+        else:
+            return Response(
+                {'details': 'Can\'t unlike without liking.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class VoteCommentView(views.APIView):

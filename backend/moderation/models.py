@@ -41,7 +41,6 @@ class Report(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # TODO What should this name be?
                 name="%(app_label)s_%(class)s_object_only_one",
                 check=(
                     models.Q(

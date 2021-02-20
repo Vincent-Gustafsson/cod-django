@@ -21,8 +21,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate_username(self, username):
         if not re.match(r'^\w+$', username):
-            # TODO Come up with a better error message
-            raise serializers.ValidationError('The username may only contain A-Z, a-z, 0-9 and _')
+            raise serializers.ValidationError(
+                'The username may only contain alphanumeric characters and _'
+            )
         else:
             return username
 
@@ -102,8 +103,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('display_name', 'description', 'avatar')
 
 
-# TODO Kind of like UserSettings. Thinking about changin the name.
-class UserDetailSerializer(serializers.ModelSerializer):
+class UserSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username')

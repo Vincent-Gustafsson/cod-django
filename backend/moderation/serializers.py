@@ -97,7 +97,6 @@ class ReportSerializer(serializers.ModelSerializer):
 
         reported_by = self.context['request'].user
 
-        # TODO Maybe this check should be handled in validate() instead.
         if article:
             comment = user = None
             if reported_by == article.user:
