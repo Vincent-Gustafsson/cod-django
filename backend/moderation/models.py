@@ -4,10 +4,25 @@ from django.db import models
 # I Could have used a GenericForeignKey in this situation but I chose not to.
 # https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/
 class Report(models.Model):
-    message = models.CharField(max_length=500, blank=True, null=True)
+    RUDE_VULGAR = 0
+    SPAM = 1
+    COPYRIGHT = 2
+    HARASSMENT_HATE_SPEECH = 3
+    INAPPROPRIATE_CONTENT = 4
+    OTHER = 5
 
-    # Should the on_delete be CASCADE or not?
-    # offense = models.ForeignKey('Reason', models.CASCADE, related_name='reports')
+    REASONS = (
+        (RUDE_VULGAR, 'Rude or vulgar'),
+        (SPAM, 'Spam'),
+        (COPYRIGHT, 'Copyright issue'),
+        (HARASSMENT_HATE_SPEECH, 'Harassment or hate speech'),
+        (INAPPROPRIATE_CONTENT, 'Inappropriate content'),
+        (OTHER, 'Other')
+    )
+
+    reason = models.IntegerField(choices=REASONS)
+
+    message = models.CharField(max_length=500, blank=True, null=True)
 
     article = models.ForeignKey('articles.Article', models.CASCADE, related_name='reports',
                                 blank=True, null=True)
@@ -19,7 +34,6 @@ class Report(models.Model):
                              blank=True, null=True)
 
     reported_by = models.ForeignKey('users.User', models.CASCADE)
-
     moderated = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)

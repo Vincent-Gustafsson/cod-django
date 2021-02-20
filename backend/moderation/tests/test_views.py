@@ -46,6 +46,7 @@ class ReportViewsTest(APITestCase):
         )
 
         self.report = Report(
+            reason=0,
             user=self.user_2,
             reported_by=self.user
         )
@@ -55,6 +56,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'article': self.article.id
         }
@@ -70,6 +72,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'comment': self.comment.id
         }
@@ -85,6 +88,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'user': self.user_2.id
         }
@@ -100,6 +104,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'article': self.article.id
         }
@@ -117,6 +122,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'comment': self.comment.id
         }
@@ -134,6 +140,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'message': 'This is offensive content.',
             'user': self.user_2.id
         }
@@ -199,6 +206,7 @@ class ReportViewsTest(APITestCase):
         for i in range(3):
             is_moderated = True if i == 1 else False
             Report.objects.create(
+                reason=0,
                 article=self.article,
                 reported_by=self.user_2,
                 moderated=is_moderated
@@ -217,6 +225,7 @@ class ReportViewsTest(APITestCase):
         for i in range(3):
             is_moderated = True if i == 1 else False
             Report.objects.create(
+                reason=0,
                 article=self.article,
                 reported_by=self.user_2,
                 moderated=is_moderated
@@ -233,6 +242,7 @@ class ReportViewsTest(APITestCase):
         url = reverse('report-list')
 
         data = {
+            'reason': 0,
             'article': self.article.id,
             'reported_by': self.user_2.id,
             'moderated': True

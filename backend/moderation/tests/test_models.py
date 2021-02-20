@@ -39,6 +39,7 @@ class ReportModelTest(TestCase):
     def test_report_article(self):
         """ Reports an article. """
         article_report = Report.objects.create(
+            reason=0,
             article=self.article,
             reported_by=self.reporting_user
         )
@@ -50,6 +51,7 @@ class ReportModelTest(TestCase):
     def test_report_comment(self):
         """ Reports a comment. """
         comment_report = Report.objects.create(
+            reason=0,
             comment=self.comment,
             reported_by=self.reporting_user
         )
@@ -61,6 +63,7 @@ class ReportModelTest(TestCase):
     def test_report_user(self):
         """ Reports a user. """
         user_report = Report.objects.create(
+            reason=0,
             user=self.user,
             reported_by=self.reporting_user
         )

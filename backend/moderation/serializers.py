@@ -60,7 +60,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ('id', 'message', 'created_at', 'reported_obj',
                   'reported_by', 'reported_by_display_name', 'reported_by_slug',
-                  'article', 'comment', 'user', 'moderated')
+                  'article', 'comment', 'user', 'reason', 'moderated')
 
         read_only_fields = ('reported_by',)
 
@@ -92,6 +92,9 @@ class ReportSerializer(serializers.ModelSerializer):
         comment = validated_data.pop('comment', None)
         user = validated_data.pop('user', None)
 
+        # 5 is the reason "OTHER"
+        reason = validated_data.pop('reason', 5)
+
         reported_by = self.context['request'].user
 
         # TODO Maybe this check should be handled in validate() instead.
@@ -115,6 +118,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
         report = Report.objects.create(
             message=validated_data.pop('message', None),
+            reason=reason,
             article=article,
             comment=comment,
             user=user,
