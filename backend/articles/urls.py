@@ -3,7 +3,7 @@ from django.urls import path
 from rest_framework import routers
 
 from .views import (ArticleViewSet, CommentViewSet, LikeArticleView,
-                    UnlikeArticleView, UpvoteCommentView, DeleteCommentVoteView,
+                    UnlikeArticleView, VoteCommentView, DeleteCommentVoteView,
                     SaveArticleView, UnsaveArticleView, ArticleFeedView, FollowTagView,
                     UnfollowTagView, DraftArticlesView)
 
@@ -19,8 +19,16 @@ urlpatterns = [
 
     path('feed/', ArticleFeedView.as_view(), name='article-feed'),
 
-    path('tags/<str:slug>/follow', FollowTagView.as_view(), name='tag-follow'),
-    path('tags/<str:slug>/unfollow', UnfollowTagView.as_view(), name='tag-unfollow'),
+    path(
+        'tags/<str:slug>/follow',
+        FollowTagView.as_view(),
+        name='tag-follow'
+    ),
+    path(
+        'tags/<str:slug>/unfollow',
+        UnfollowTagView.as_view(),
+        name='tag-unfollow'
+    ),
 
     path(
         'articles/<str:slug>/like/',
@@ -35,7 +43,7 @@ urlpatterns = [
 
     path(
         'comments/<int:pk>/vote/',
-        UpvoteCommentView.as_view(),
+        VoteCommentView.as_view(),
         name='comment-vote'
     ),
     path(

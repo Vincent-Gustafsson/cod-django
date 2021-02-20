@@ -279,7 +279,7 @@ class UnlikeArticleView(views.APIView):
         )
 
 
-class UpvoteCommentView(views.APIView):
+class VoteCommentView(views.APIView):
     """ Handles creation of comment votes. """
     permission_classes = (IsAuthenticated,)
 
@@ -289,31 +289,37 @@ class UpvoteCommentView(views.APIView):
 
         user_voted = CommentVote.objects.filter(user=user)
 
-        if not user_voted:
-            if request.data.get('downvote'):
-                CommentVote.objects.create(
-                    downvote=True,
-                    user=user,
-                    comment=comment
+        if not comment.deleted:
+            if not user_voted:
+                if request.data.get('downvote'):
+                    CommentVote.objects.create(
+                        downvote=True,
+                        user=user,
+                        comment=comment
+                    )
+
+                else:
+                    CommentVote.objects.create(
+                        user=user,
+                        comment=comment
+                    )
+
+                return Response(
+                    {'details': 'Voted on comment.'},
+                    status=status.HTTP_201_CREATED
                 )
 
             else:
-                CommentVote.objects.create(
-                    user=user,
-                    comment=comment
+                return Response(
+                    {'details': 'Can\'t vote twice.'},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
-
-            return Response(
-                {'details': 'Voted on comment.'},
-                status=status.HTTP_201_CREATED
-            )
 
         else:
             return Response(
-                {'details': 'Can\'t vote twice.'},
+                {'details': 'Can\'t vote on a deleted comment.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 
 class DeleteCommentVoteView(views.APIView):
     """ Handles deletion of comment votes. """
