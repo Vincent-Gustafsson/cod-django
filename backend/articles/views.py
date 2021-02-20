@@ -321,6 +321,7 @@ class VoteCommentView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
 class DeleteCommentVoteView(views.APIView):
     """ Handles deletion of comment votes. """
     permission_classes = (IsAuthenticated,)
