@@ -102,10 +102,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             comment = self.get_object()
-            comment.deleted = True
-            comment.save()
+            comment.delete()
         except Http404:
-            return Response({'details': 'couldn\'t delete.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {'details': 'couldn\'t delete.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -119,13 +119,22 @@ class Comment(models.Model):
 
         super(Comment, self).save(*args, **kwargs)
 
+    def delete(self):
+        self.deleted = True
+        self.comment_votes.all().delete()
+        self.save()
+
     @property
     def score(self):
-        votes = self.comment_votes.all()
-        if votes:
-            return votes.filter(downvote=False).count() - votes.filter(downvote=True).count()
+        if not self.deleted:
+            votes = self.comment_votes.all()
+            if votes:
+                return votes.filter(downvote=False).count() - votes.filter(downvote=True).count()
 
-        return 0
+            return 0
+
+        else:
+            return None
 
     @property
     def reports_count(self):
