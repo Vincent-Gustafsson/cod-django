@@ -341,7 +341,7 @@ class FollowViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json(), {'details': 'follow successful'})
+        self.assertEqual(response.json(), {'details': 'Follow successful.'})
 
         self.assertEqual(UserFollowing.objects.count(), 1)
         self.assertEqual(UserFollowing.objects.get().user_follows, self.user)
@@ -367,7 +367,7 @@ class FollowViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Can\'t follow yourself'})
+        self.assertEqual(response.json(), {'details': 'Can\'t follow yourself.'})
 
     def test_unfollow_self(self):
         """ Throws and error because you can't unfollow yourself. """
@@ -377,7 +377,7 @@ class FollowViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Can\'t unfollow yourself'})
+        self.assertEqual(response.json(), {'details': 'Can\'t unfollow yourself.'})
 
     def test_already_following(self):
         """ Throws and error because you can't follow someone twice. """
@@ -388,7 +388,7 @@ class FollowViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Already following'})
+        self.assertEqual(response.json(), {'details': 'Already following.'})
 
         self.assertEqual(UserFollowing.objects.count(), 1)
 
@@ -403,7 +403,7 @@ class FollowViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'You\'re not following that person'})
+        self.assertEqual(response.json(), {'details': 'You\'re not following that person.'})
 
     def test_follow_invalid_user(self):
         """

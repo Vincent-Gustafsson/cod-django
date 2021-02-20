@@ -401,7 +401,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {'details': 'Saved article'})
+        self.assertEqual(response.json(), {'details': 'Saved article.'})
 
     def test_save_own_article(self):
         """ The user can't save its own article. """
@@ -411,7 +411,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.json(), {'details': 'You can\'t save your own article'})
+        self.assertEqual(response.json(), {'details': 'You can\'t save your own article.'})
 
     def test_save_twice(self):
         """ Can save an article twice. """
@@ -424,7 +424,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'You have already saved this article'})
+        self.assertEqual(response.json(), {'details': 'You have already saved this article.'})
 
     def test_unsave(self):
         """ Can unsave an article. """
@@ -452,7 +452,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'You must save before you can unsave'})
+        self.assertEqual(response.json(), {'details': 'You must save before you can unsave.'})
 
         self.assertEqual(self.user.saved_articles.count(), 0)
 
@@ -464,7 +464,7 @@ class ArticleSaveViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.json(), {'details': 'You unsave your own post'})
+        self.assertEqual(response.json(), {'details': 'You can\'t unsave your own post.'})
 
 
 class ArticleLikeViewsTest(APITestCase):
@@ -523,7 +523,7 @@ class ArticleLikeViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json(), {'details': 'Liked article'})
+        self.assertEqual(response.json(), {'details': 'Liked article.'})
 
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
         self.assertEqual(ArticleLike.objects.get().user, self.user)
@@ -547,7 +547,7 @@ class ArticleLikeViewsTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json(), {'details': 'Superliked article'})
+        self.assertEqual(response.json(), {'details': 'Superliked article.'})
 
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
         self.assertEqual(ArticleLike.objects.get().user, self.user)
@@ -599,7 +599,7 @@ class ArticleLikeViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Can\'t like twice'})
+        self.assertEqual(response.json(), {'details': 'Can\'t like twice.'})
 
         self.assertEqual(ArticleLike.objects.filter(special_like=False).count(), 1)
         self.assertEqual(ArticleLike.objects.get().user, self.user)
@@ -617,7 +617,7 @@ class ArticleLikeViewsTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Can\'t special like twice'})
+        self.assertEqual(response.json(), {'details': 'Can\'t special like twice.'})
 
         self.assertEqual(ArticleLike.objects.filter(special_like=True).count(), 1)
         self.assertEqual(ArticleLike.objects.get().user, self.user)
@@ -904,7 +904,7 @@ class FollowTagViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json(), {'details': 'follow successful'})
+        self.assertEqual(response.json(), {'details': 'Follow successful.'})
 
     def test_follow_tag_twice(self):
         """ User can't follow a tag twice. """
@@ -916,7 +916,7 @@ class FollowTagViewsTest(APITestCase):
         response = self.client.post(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'Already following'})
+        self.assertEqual(response.json(), {'details': 'Already following.'})
 
     def test_unfollow_tag(self):
         """ User unfollows the tag. """
@@ -939,4 +939,4 @@ class FollowTagViewsTest(APITestCase):
         response = self.client.delete(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'details': 'You\'re not following that tag'})
+        self.assertEqual(response.json(), {'details': 'You\'re not following that tag.'})

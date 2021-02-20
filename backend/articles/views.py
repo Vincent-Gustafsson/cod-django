@@ -105,7 +105,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             comment.deleted = True
             comment.save()
         except Http404:
-            return Response(data='could not delete', status=status.HTTP_204_NO_CONTENT)
+            return Response({'details': 'couldn\'t delete.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -127,19 +127,19 @@ class SaveArticleView(views.APIView):
                 user.saved_articles.add(article)
 
                 return Response(
-                    {'details': 'Saved article'},
+                    {'details': 'Saved article.'},
                     status=status.HTTP_200_OK
                 )
 
             else:
                 return Response(
-                    {'details': 'You have already saved this article'},
+                    {'details': 'You have already saved this article.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
         else:
             return Response(
-                {'details': 'You can\'t save your own article'},
+                {'details': 'You can\'t save your own article.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -167,13 +167,13 @@ class UnsaveArticleView(views.APIView):
 
             else:
                 return Response(
-                    {'details': 'You must save before you can unsave'},
+                    {'details': 'You must save before you can unsave.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
         else:
             return Response(
-                {'details': 'You unsave your own post'},
+                {'details': 'You can\'t unsave your own post.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -203,13 +203,13 @@ class LikeArticleView(views.APIView):
                     )
 
                     return Response(
-                        {'details': 'Superliked article'},
+                        {'details': 'Superliked article.'},
                         status=status.HTTP_201_CREATED
                     )
 
             else:
                 return Response(
-                    {'details': 'Can\'t special like twice'},
+                    {'details': 'Can\'t special like twice.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -219,11 +219,11 @@ class LikeArticleView(views.APIView):
                     article=article
                 )
 
-                return Response({'details': 'Liked article'}, status=status.HTTP_201_CREATED)
+                return Response({'details': 'Liked article.'}, status=status.HTTP_201_CREATED)
 
             else:
                 return Response(
-                    {'details': 'Can\'t like twice'},
+                    {'details': 'Can\'t like twice.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -266,7 +266,7 @@ class UnlikeArticleView(views.APIView):
 
             else:
                 return Response(
-                    {'details': 'Can\'t unlike without liking'},
+                    {'details': 'Can\'t unlike without liking.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -301,13 +301,13 @@ class UpvoteCommentView(views.APIView):
                 )
 
             return Response(
-                {'details': 'Voted on comment'},
+                {'details': 'Voted on comment.'},
                 status=status.HTTP_201_CREATED
             )
 
         else:
             return Response(
-                {'details': 'Can\'t vote twice'},
+                {'details': 'Can\'t vote twice.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -328,7 +328,7 @@ class DeleteCommentVoteView(views.APIView):
 
         else:
             return Response(
-                {'details': 'Can\'t unvote without voting'},
+                {'details': 'Can\'t unvote without voting.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -404,13 +404,13 @@ class FollowTagView(views.APIView):
             tag_to_follow.followers.add(user)
 
             return Response(
-                {'details': 'follow successful'},
+                {'details': 'Follow successful.'},
                 status=status.HTTP_201_CREATED
             )
 
         else:
             return Response(
-                {'details': 'Already following'},
+                {'details': 'Already following.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -432,6 +432,6 @@ class UnfollowTagView(views.APIView):
 
         else:
             return Response(
-                {'details': 'You\'re not following that tag'},
+                {'details': 'You\'re not following that tag.'},
                 status=status.HTTP_400_BAD_REQUEST
             )

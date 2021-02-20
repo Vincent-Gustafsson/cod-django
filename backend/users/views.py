@@ -72,19 +72,19 @@ class FollowUserView(views.APIView):
             if not user.is_already_following(user_to_follow):
                 user.follow(user_to_follow)
                 return Response(
-                    {'details': 'follow successful'},
+                    {'details': 'Follow successful.'},
                     status=status.HTTP_201_CREATED
                 )
 
             else:
                 return Response(
-                    {'details': 'Already following'},
+                    {'details': 'Already following.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
         else:
             return Response(
-                {'details': 'Can\'t follow yourself'},
+                {'details': 'Can\'t follow yourself.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -105,12 +105,12 @@ class UnfollowUserView(views.APIView):
 
             else:
                 return Response(
-                    {'details': 'You\'re not following that person'},
+                    {'details': 'You\'re not following that person.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
         else:
             return Response(
-                {'details': 'Can\'t unfollow yourself'},
+                {'details': 'Can\'t unfollow yourself.'},
                 status=status.HTTP_400_BAD_REQUEST
             )

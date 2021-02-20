@@ -63,5 +63,5 @@ class ReportViewSet(viewsets.GenericViewSet,  # noqa
             report.moderated = True
             report.save()
         except Http404:
-            return Response(data='could not mark moderated', status=status.HTTP_400_BAD_REQUEST)
+            return Response({'details': 'Couldn\'t mark moderated.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
