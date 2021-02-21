@@ -1,23 +1,25 @@
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
+assert 'SECRET_KEY' in os.environ, 'SECRET_KEY not set.'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%xua63aaix-!8me@@oy^2b)=c5&(3_w1%=89(5kes%yyk)t^*9'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
+
 
 ALLOWED_HOSTS = []
+CORS_ORIGIN_ALLOW_ALL = True
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -47,15 +49,8 @@ INSTALLED_APPS = [
     'notifications'
 ]
 
+
 AUTH_USER_MODEL = 'users.User'
-
-REST_AUTH_REGISTER_SERIALIZERS = {
-    'REGISTER_SERIALIZER': 'users.serializers.UserRegistrationSerializer',
-}
-
-REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'users.serializers.UserSettingsSerializer',
-}
 
 
 MIDDLEWARE = [
@@ -71,7 +66,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'cod.urls'
+
 
 TEMPLATES = [
     {
@@ -89,12 +86,12 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'cod.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -105,7 +102,6 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -127,7 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -141,19 +136,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATIC_URL = '/static/'
 
-CORS_ORIGIN_ALLOW_ALL = True
 
 SITE_ID = 1
 
-# Using this Email backend right now because I don't care about the email verification right now.
-EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 # Switch to Console backend if you want to see the emails in the console
 # Switch to a real Email backend if it's needed.
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Using this Email backend right now because I don't care about the email verification right now.
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 
 REST_FRAMEWORK = {
@@ -163,6 +157,15 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'users.serializers.UserRegistrationSerializer',
+}
+
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserSettingsSerializer',
+}
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
