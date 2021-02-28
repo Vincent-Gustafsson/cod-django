@@ -3,6 +3,7 @@ import re
 from django.contrib.auth import password_validation
 
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
 
 from .models import User, UserFollowing
 
@@ -101,6 +102,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('display_name', 'description', 'avatar')
+
+    def validate(self, data):
+        display_name = data.get('display_name')
+
+        if display_name is not None:
+            if display_name in ('', ' ', '⠀'):
+                raise ValidationError('d')
+
+        return data
 
 
 class UserSettingsSerializer(serializers.ModelSerializer):

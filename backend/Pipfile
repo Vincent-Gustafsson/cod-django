@@ -15,6 +15,9 @@ django-allauth = "*"
 dj-rest-auth = "*"
 pillow = "*"
 django-autoslug = "*"
+python-dotenv = "*"
+faker = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.8"

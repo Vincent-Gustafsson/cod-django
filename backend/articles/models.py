@@ -11,7 +11,13 @@ class Tag(models.Model):
     name = models.CharField(max_length=20)
     description = models.CharField(max_length=200, blank=True, null=True)
 
-    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='name')
+    slug = AutoSlugField(
+        null=True,
+        default=None,
+        unique=True,
+        populate_from='name',
+        always_update=True
+    )
 
     followers = models.ManyToManyField('users.User', related_name='followed_tags',
                                        blank=True)
@@ -32,7 +38,8 @@ class Article(models.Model):
         default=None,
         unique=True,
         populate_from='title',
-        manager=_all_articles
+        manager=_all_articles,
+        always_update=True
     )
 
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='articles')

@@ -239,6 +239,9 @@ class UserViewsTest(APITestCase):
 
         self.users = User.objects.all()
 
+        self.users[0].description = 'test'
+        self.users[0].save()
+
     def test_list_users(self):
         """ Returns all users. """
         url = reverse('user-list')
@@ -273,34 +276,33 @@ class UserViewsTest(APITestCase):
 
     def test_update_user_profile(self):
         """ Updates a the user's profile. """
-
         url = reverse('user-profile-update')
 
-        user = self.users[0]
-        original_avatar = self.users[0].avatar
+        user = User.objects.get(pk=self.users[0].id)
 
-        new_display_name = fake.first_name()
-        avatar_fp = 'C:/dev/cod/backend/media/uploads/avatars/test_avatar.jpg'
+        original_avatar = user.avatar
+
+        avatar_fp = 'media/uploads/avatars/test_avatar.jpg'
 
         with open(avatar_fp, 'rb') as avatar:
             data = {
-                'display_name': new_display_name,
-                'description': 'This is a test description.',
+                'display_name': 'my_display_name',
+                'description': 'This is the new description.',
                 'avatar': avatar
             }
 
             self.client.force_authenticate(user)
             response = self.client.patch(url, data, format='multipart')
 
-        new_avatar = self.users[0].avatar
+        user = User.objects.get(pk=user.id)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.users[0].display_name, new_display_name)
-        self.assertEqual(self.users[0].description, 'This is a test description.')
-        self.assertNotEqual(original_avatar, new_avatar)
+        self.assertEqual(user.display_name, 'my_display_name')
+        self.assertEqual(user.description, 'This is the new description.')
+        self.assertNotEqual(original_avatar, user.avatar)
 
     def tearDown(self):
-        directory = 'C:/dev/cod/backend/media/uploads/avatars'
+        directory = 'media/uploads/avatars'
         preserved_files = ('test_avatar.jpg', 'default_avatar.png',)
 
         for filename in os.listdir(directory):

@@ -34,6 +34,7 @@ class UserListRetrieveViewSet(viewsets.GenericViewSet,
 
 class UserDestroyView(generics.DestroyAPIView):
     """ Handles the deletion of users. """
+    permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -47,8 +48,10 @@ class UserDestroyView(generics.DestroyAPIView):
 
 class UserProfileUpdateView(generics.UpdateAPIView):
     """ User profile view. """
+    permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+    http_method_names = ['patch']
 
     def get_object(self):
         try:
@@ -56,6 +59,9 @@ class UserProfileUpdateView(generics.UpdateAPIView):
             return instance
         except User.DoesNotExist:
             raise exceptions.NotFound()
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
 
 class FollowUserView(views.APIView):

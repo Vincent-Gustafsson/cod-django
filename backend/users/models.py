@@ -30,7 +30,13 @@ class User(AbstractBaseUser):
     display_name = models.CharField(max_length=30, blank=True, null=True)
     description = models.CharField(max_length=150, blank=True, null=True)
 
-    slug = AutoSlugField(null=True, default=None, unique=True, populate_from='username')
+    slug = AutoSlugField(
+        null=True,
+        default=None,
+        unique=True,
+        populate_from='username',
+        always_update=True
+    )
 
     avatar = models.ImageField(upload_to='uploads/avatars',
                                default='uploads/avatars/default_avatar.png')
@@ -62,7 +68,6 @@ class User(AbstractBaseUser):
         # Display name will prbably be set by the user when he / she updates their profile.
         if self.display_name is None:
             self.display_name = self.username
-            self.save()
 
         # Gets the default value of the avatar ImageField.
         # In this case:
@@ -72,7 +77,6 @@ class User(AbstractBaseUser):
         if self.avatar is None:
             default_avatar_path = User._meta.get_field('avatar').get_default()
             self.avatar = default_avatar_path
-            self.save()
 
         super(User, self).save(*args, **kwargs)
 

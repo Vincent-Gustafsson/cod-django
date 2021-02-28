@@ -59,7 +59,7 @@ class ArticleTagViewsTest(APITestCase):
 
         data = {'tags': ['python', 'vue']}
 
-        self.article.tags.set((2, 3, 6,))
+        self.article.tags.set((self.tags[2].id, self.tags[3].id, self.tags[5].id,))
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, data, format='json')
@@ -107,7 +107,7 @@ class ArticleTagViewsTest(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Tag.objects.get(pk=1).articles.count(), 0)
+        self.assertEqual(Tag.objects.get(pk=self.tags[1].id).articles.count(), 0)
 
 
 class ArticleViewsTest(APITestCase):
@@ -194,9 +194,7 @@ class ArticleViewsTest(APITestCase):
         """ Creates an article with a thumbnail. """
         url = reverse('article-list')
 
-        thumbnail_fp = 'C:/dev/cod/backend/media/uploads/thumbnails/test_thumbnail.png'
-
-        with open(thumbnail_fp, 'rb') as thumbnail:
+        with open('media/uploads/thumbnails/test_thumbnail.png', 'rb') as thumbnail:
             data = {
                 'title': 'Test title',
                 'content': 'This is the content',
@@ -359,7 +357,7 @@ class ArticleViewsTest(APITestCase):
     def tearDown(self):
         # All of this code may be unecessary, but it works.
 
-        directory = 'C:/dev/cod/backend/media/uploads/thumbnails'
+        directory = os.path.abspath('media/uploads/thumbnails/')
         preserved_files = ('test_thumbnail.png',)
 
         for filename in os.listdir(directory):
@@ -780,6 +778,7 @@ class CommentViewsTest(APITestCase):
     def test_create_child_comment(self):
         """ Creates a reply (child comment). """
         self.comment.save()
+        # Comment.objects.create(body='2', article=self.article, user=self.user)
         url = reverse('comment-list')
 
         data = {
@@ -792,10 +791,9 @@ class CommentViewsTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         self.assertEqual(Comment.objects.count(), 2)
         self.assertEqual(self.article.comments.count(), 2)
-        self.assertEqual(self.article.comments.get(pk=2).parent, self.comment)
+        self.assertEqual(self.article.comments.get(pk=7).parent, self.comment)
 
 
 class CommentVoteViewsTest(APITestCase):
