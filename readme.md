@@ -2,7 +2,6 @@
 Welcome to cod. Cod is a website where coders can share their latest work, tutorials and their coding stories. Cod is an alternative to websites like [medium.com](https://medium.com/) and [dev.to](https://dev.to/)
 
 ## Features
-> :warning: **Features might come and go.** Not all of these features are implemented yet.
 - Users
   - Profiles
   - Follow system
@@ -20,6 +19,3 @@ Welcome to cod. Cod is a website where coders can share their latest work, tutor
 - Personal feed
   - Articles from followed users
   - Articles from followed tags
-
-## Trello board
-https://trello.com/b/uFd9A6TK/cod
